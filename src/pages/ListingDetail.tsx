@@ -1,0 +1,256 @@
+import React, { useEffect, useState } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import ReviewsSection from '../components/Reviews';
+import {
+  FaBed, FaChair, FaBiking, FaDumbbell, FaChild,
+  FaBuilding, FaSwimmer, FaFire, FaCar,
+  FaHandsWash, FaTree, FaShower, FaToilet, FaShoppingCart,
+  FaHospital, FaWater, FaCarSide, FaWineGlass, FaUmbrella, FaHeart,
+} from 'react-icons/fa';
+import { useAuth } from '../auth/authContext';
+
+
+// Skeleton Loader
+const SkeletonLoader: React.FC = () => (
+  <div className="animate-pulse px-6 p-6 sm:p-8 md:p-10">
+    {/* Image Grid Skeleton */}
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+      {/* Main Image Skeleton */}
+      <div className="bg-gray-300 h-64 sm:h-80 md:h-96 w-full rounded-lg shadow-md"></div>
+
+      {/* Thumbnail Images Skeleton */}
+      <div className="grid grid-cols-2 gap-2">
+        <div className="bg-gray-300 h-32 sm:h-36 md:h-44 w-full rounded-lg shadow-md"></div>
+        <div className="bg-gray-300 h-32 sm:h-36 md:h-44 w-full rounded-lg shadow-md"></div>
+        <div className="bg-gray-300 h-32 sm:h-36 md:h-44 w-full rounded-lg shadow-md"></div>
+        <div className="bg-gray-300 h-32 sm:h-36 md:h-44 w-full rounded-lg shadow-md"></div>
+      </div>
+    </div>
+
+    {/* Details Skeleton */}
+    <div className="mb-4">
+      <div className="bg-gray-300 h-6 w-2/3 sm:w-1/3 mb-3 rounded"></div>
+      <div className="bg-gray-300 h-4 w-1/2 sm:w-1/4 mb-3 rounded"></div>
+      <div className="bg-gray-300 h-6 w-full sm:w-3/4 mb-4 rounded"></div>
+    </div>
+
+    {/* Amenities Skeleton */}
+    <div>
+      <div className="bg-gray-300 h-6 w-1/4 sm:w-1/6 mb-4 rounded"></div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+        {[...Array(6)].map((_, index) => (
+          <div key={index} className="flex items-center space-x-2">
+            <div className="bg-gray-300 h-8 w-8 rounded-full"></div>
+            <div className="bg-gray-300 h-4 w-3/4 sm:w-1/2 rounded"></div>
+          </div>
+        ))}
+      </div>
+   </div>
+ </div>
+);
+
+interface IListing {
+  images: any;
+  l_id: number;
+  title: string;
+  location: string;
+  price: string;
+  rating: number;
+  imageUrls: string[];
+  description: string;
+  amenities: string[];
+  likes: number;
+}
+
+
+interface WishlistState {
+  isInWishlist: boolean;
+  likes: number;
+}
+
+
+const ListingDetail: React.FC = () => {
+  const { l_id } = useParams<{ l_id: string }>();
+  const navigate = useNavigate();
+  const { currentUser } = useAuth(); // Hook called within the component
+  const [listing, setListing] = useState<IListing | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [wishlistState, setWishlistState] = useState<WishlistState>({
+    isInWishlist: false,
+    likes: 0,
+  });
+
+  useEffect(() => {
+    const fetchListing = async () => {
+      try {
+        const response = await fetch(`http://localhost:5000/api/listings/${l_id}`);
+        if (!response.ok) {
+          throw new Error('Error fetching listing');
+        }
+        const data = await response.json();
+        setListing(data);
+      } catch (err) {
+        setError('Failed to load listing.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchListing();
+  }, [l_id]);
+
+  useEffect(() => {
+    const checkWishlistStatus = async () => {
+      if (currentUser) {
+        try {
+          const response = await fetch(
+            `http://localhost:5000/api/wishlist/check/${l_id}`,
+            {
+              headers: {
+                Authorization: `Bearer ${await currentUser.getIdToken()}`,
+              },
+            }
+          );
+          const data = await response.json();
+          setWishlistState(data);
+        } catch (error) {
+          console.error('Error checking wishlist status:', error);
+        }
+      }
+    };
+
+    checkWishlistStatus();
+  }, [l_id, currentUser]);
+
+  const handleLike = async () => {
+    if (!currentUser) {
+      navigate('/login');
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `http://localhost:5000/api/wishlist/${l_id}`,
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${await currentUser.getIdToken()}`,
+          },
+        }
+      );
+      const data = await response.json();
+      setWishlistState(data);
+    } catch (error) {
+      console.error('Error toggling wishlist:', error);
+    }
+  };
+
+  if (loading) return <SkeletonLoader />;
+  if (error) return <div className="text-red-600">{error}</div>;
+  if (!listing) return <div>Listing not found</div>;
+
+  const backendUrl = 'http://localhost:5000';
+
+  const getAmenityIcon = (amenity: string) => {
+    const amenityLower = amenity.toLowerCase();
+    const iconMapping: { [key: string]: JSX.Element } = {
+      bedroom: <FaBed />,
+      bed: <FaBed />,
+      bath: <FaToilet />,
+      shower: <FaShower />,
+      patio: <FaUmbrella />,
+      balcony: <FaBiking />,
+      gym: <FaDumbbell />,
+      playground: <FaChild />,
+      mart: <FaShoppingCart />,
+      chemist: <FaHospital />,
+      water: <FaWater />,
+      kids: <FaChild />,
+      elevator: <FaBuilding />,
+      lift: <FaBuilding />,
+      pool: <FaSwimmer />,
+      fireplace: <FaFire />,
+      firepit: <FaFire />,
+      parking: <FaCar />,
+      car: <FaCarSide />,
+      kitchen: <FaWineGlass />,
+      laundry: <FaHandsWash />,
+      garden: <FaTree />,
+    };
+    return iconMapping[amenityLower] || <FaChair />;
+  };
+
+  return (
+    <div className="container mx-auto px-6 py-8">
+      {/* Photo Gallery Section */}
+      <div className="grid grid-cols-2 gap-4 mb-8">
+        {listing.imageUrls?.[0] && (
+          <img
+            src={`${backendUrl}/uploads/${listing.imageUrls[0]}`}
+            alt="Main Image"
+            className="col-span-1 w-full h-96 object-cover rounded-lg shadow-md"
+          />
+        )}
+        <div className="grid grid-cols-2 gap-2">
+          {listing.imageUrls.slice(1, 5).map((url, index) => (
+            <img
+              key={index}
+              src={`${backendUrl}/uploads/${url}`}
+              alt={`Thumbnail ${index + 2}`}
+              className="w-full h-44 object-cover rounded-lg shadow-md"
+            />
+          ))}
+          {listing.imageUrls.length > 5 && (
+            <Link to={`/listing/${l_id}/gallery`} className="col-span-2 text-center text-blue-500 mt-2">
+              View All Photos
+            </Link>
+          )}
+        </div>
+      </div>
+
+      {/* Description and Details */}
+      <div>
+      <div className="flex items-center space-x-2">
+  <button
+    onClick={handleLike}
+    className={`flex items-center space-x-1 ${
+      wishlistState.isInWishlist ? 'text-red-500' : 'text-gray-500'
+    } hover:text-red-500 transition-colors`}
+  >
+    <FaHeart className={`h-6 w-6 ${
+      wishlistState.isInWishlist ? 'fill-current' : 'stroke-current'
+    }`} />
+    <span>{wishlistState.likes}</span>
+  </button>
+  {wishlistState.isInWishlist && (
+    <span className="text-sm text-gray-500">Added to wishlist</span>
+  )}
+</div>
+        <h1 className="text-2xl font-semibold">{listing.title}</h1>
+        <p className="text-gray-600 mt-2"><strong>Location:</strong> {listing.location}</p>
+        <p className="text-gray-800 mt-4"><strong>Price:</strong> {listing.price}</p>
+        <p className="text-gray-800 mt-4"><strong>Rating:</strong> {listing.rating}⭐</p>
+        <p className="text-gray-800 mt-4"><strong>Description:</strong> {listing.description}</p>
+      </div>
+
+      {/* Amenities Section */}
+      <div className="mt-8">
+        <h2 className="text-lg font-semibold text-gray-900">Amenities</h2>
+        <div className="grid grid-cols-2 gap-4 mt-4">
+          {listing.amenities.map((amenity, index) => (
+            <div key={index} className="flex items-center space-x-2">
+              <span className="text-yellow-600">{getAmenityIcon(amenity)}</span>
+              <span className="text-gray-600 capitalize">{amenity}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Reviews Section */}
+      <ReviewsSection l_id={listing.l_id} />
+    </div>
+  );  
+};
+
+export default ListingDetail;

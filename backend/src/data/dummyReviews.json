@@ -1,0 +1,13 @@
+[
+    { "l_id": 1, "userEmail": "samato.moma@gmail.com", "rating": 4, "comment": "Great place!", "userImage": "" },
+    { "l_id": 2, "userEmail": "samato.moma@gmail.com", "rating": 5, "comment": "Amazing experience!", "userImage": "" },
+    { "l_id": 3, "userEmail": "samato.moma@gmail.com", "rating": 3, "comment": "Could be better.", "userImage": "" },
+    { "l_id": 4, "userEmail": "samato.moma@gmail.com", "rating": 5, "comment": "Perfect for families!", "userImage": "" },
+    { "l_id": 5, "userEmail": "samato.moma@gmail.com", "rating": 4, "comment": "Loved the location.", "userImage": "" },
+    { "l_id": 6, "userEmail": "samato.moma@gmail.com", "rating": 3, "comment": "Not as expected.", "userImage": "" },
+    { "l_id": 7, "userEmail": "samato.moma@gmail.com", "rating": 5, "comment": "Absolutely amazing!", "userImage": "" },
+    { "l_id": 8, "userEmail": "samato.moma@gmail.com", "rating": 2, "comment": "Needs improvement.", "userImage": "" },
+    { "l_id": 9, "userEmail": "samato.moma@gmail.com", "rating": 4, "comment": "Very cozy!", "userImage": "" },
+    { "l_id": 11, "userEmail": "samato.moma@gmail.com", "rating": 5, "comment": "Unforgettable stay!", "userImage": "" }
+  ]
+  

@@ -1,0 +1,72 @@
+[
+  {
+    "l_id": 1,
+    "title": "Micasa Apartments1",
+    "description": "Spacious 2 bedroom house",
+    "location": "Kasarani, Nairobi",
+    "amenities": "2 baths, 2 bedrooms, hot shower, gym, parking space",
+    "price": "Ksh 12000 pm",
+    "rating": "5.0",
+    "imageUrls": ["Apartment1.jpg", "Apartment5.jpg"]
+  },
+  {
+    "l_id": 2,
+    "title": "Ridge Apartments",
+    "description": "Luxurious modern 3 bedroom house",
+    "location": "Kasarani, Nairobi",
+    "amenities": "2 baths, 3 bedrooms, patio, hot shower, gym, kids playground, parking space",
+    "price": "Ksh 18000 pm",
+    "rating": "5.0",
+    "imageUrls": ["Apartment2.jpg", "Apartment6.jpg"]
+  },
+  {
+    "l_id": 3,
+    "title": "Highway Complex",
+    "description": "Luxurious modern 3 bedroom house",
+    "location": "Safari Park, Nairobi",
+    "amenities": "2 baths, 3 bedrooms, spacious balcony, hot shower, gym, kids playground, parking space, laundry room",
+    "price": "Ksh 20000 pm",
+    "rating": "5.0",
+    "imageUrls": ["Apartment3.jpg", "Apartment7.jpg"]
+  },
+  {
+    "l_id": 4,
+    "title": "Grand Heights Apartments",
+    "description": "Beautiful Apartments",
+    "location": "Seasons Kasarani Mwiki RD, Nairobi",
+    "amenities": "2 baths, 2 bedrooms, hot shower, balcony, gym, parking space",
+    "price": "Ksh 15000 pm",
+    "rating": "4.5",
+    "imageUrls": ["Apartment4.jpg", "Apartment8.jpg"]
+  },
+  {
+    "l_id": 5,
+    "title": "Gemini Homes",
+    "description": "Mordern and aesthetic homes",
+    "location": "Seasons Kasarani Mwiki RD, Nairobi",
+    "amenities": "2 baths, 2 bedrooms, hot shower, balcony, gym, swimming pool, parking space",
+    "price": "Ksh 18000 pm",
+    "rating": "4.5",
+    "imageUrls": ["Apartment9.jpg", "Apartment10.jpg"]
+  },
+  {
+    "l_id": 6,
+    "title": "Grand Heights Apartments",
+    "description": "Beautiful Apartments",
+    "location": "Hunters Kasarani Mwiki RD, Nairobi",
+    "amenities": "2 baths, 2 bedrooms, hot shower, community gym, balcony, parking space, laundry room",
+    "price": "Ksh 18000 pm",
+    "rating": "4.5",
+    "imageUrls": ["Apartment11.jpg", "Apartment12.jpg"]
+  },
+  {
+    "l_id": 7,
+    "title": "Garden Estates",
+    "description": "Beautiful gardens and lively surroundings",
+    "location": "Garden Estate, Nairobi",
+    "amenities": "2 baths, 3 bedrooms, hot shower, patio, community gym,community pool, parking space",
+    "price": "Ksh 23000 pm",
+    "rating": "5.0",
+    "imageUrls": ["Hoodview.jpg", "Patio1.jpg"]
+  }
+]
