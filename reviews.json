@@ -1,0 +1,146 @@
+[
+    {
+        "l_id": 1,
+        "userEmail": "samato.moma@gmail.com",
+        "userImage": "",
+        "rating": 4,
+        "comment": "Great place!",
+        "createdAt": "2025-01-09T08:26:54.838000",
+        "__v": 0
+    },
+    {
+        "l_id": 2,
+        "userEmail": "samato.moma@gmail.com",
+        "userImage": "",
+        "rating": 5,
+        "comment": "Amazing experience!",
+        "createdAt": "2025-01-09T08:26:54.890000",
+        "__v": 0
+    },
+    {
+        "l_id": 3,
+        "userEmail": "samato.moma@gmail.com",
+        "userImage": "",
+        "rating": 3,
+        "comment": "Could be better.",
+        "createdAt": "2025-01-09T08:26:54.903000",
+        "__v": 0
+    },
+    {
+        "l_id": 4,
+        "userEmail": "samato.moma@gmail.com",
+        "userImage": "",
+        "rating": 5,
+        "comment": "Perfect for families!",
+        "createdAt": "2025-01-09T08:26:54.914000",
+        "__v": 0
+    },
+    {
+        "l_id": 5,
+        "userEmail": "samato.moma@gmail.com",
+        "userImage": "",
+        "rating": 4,
+        "comment": "Loved the location.",
+        "createdAt": "2025-01-09T08:26:54.927000",
+        "__v": 0
+    },
+    {
+        "l_id": 6,
+        "userEmail": "samato.moma@gmail.com",
+        "userImage": "",
+        "rating": 3,
+        "comment": "Not as expected.",
+        "createdAt": "2025-01-09T08:26:54.935000",
+        "__v": 0
+    },
+    {
+        "l_id": 7,
+        "userEmail": "samato.moma@gmail.com",
+        "userImage": "",
+        "rating": 5,
+        "comment": "Absolutely amazing!",
+        "createdAt": "2025-01-09T08:26:54.943000",
+        "__v": 0
+    },
+    {
+        "l_id": 8,
+        "userEmail": "samato.moma@gmail.com",
+        "userImage": "",
+        "rating": 2,
+        "comment": "Needs improvement.",
+        "createdAt": "2025-01-09T08:26:54.949000",
+        "__v": 0
+    },
+    {
+        "l_id": 9,
+        "userEmail": "samato.moma@gmail.com",
+        "userImage": "",
+        "rating": 4,
+        "comment": "Very cozy!",
+        "createdAt": "2025-01-09T08:26:54.959000",
+        "__v": 0
+    },
+    {
+        "l_id": 11,
+        "userEmail": "samato.moma@gmail.com",
+        "userImage": "",
+        "rating": 5,
+        "comment": "Unforgettable stay!",
+        "createdAt": "2025-01-09T08:26:54.970000",
+        "__v": 0
+    },
+    {
+        "l_id": 8,
+        "userEmail": "samato.moma@gmail.com",
+        "userImage": "https://www.gravatar.com/avatar/8850293215b706e29feb021e5de254b7?d=identicon",
+        "rating": 4,
+        "comment": "Decent Homes!",
+        "createdAt": "2025-01-09T09:32:26.235000",
+        "__v": 0
+    },
+    {
+        "l_id": 1,
+        "userEmail": "samato.moma@gmail.com",
+        "userImage": "https://www.gravatar.com/avatar/8850293215b706e29feb021e5de254b7?d=identicon",
+        "rating": 4,
+        "comment": "This is a great listing!",
+        "createdAt": "2025-01-09T10:05:49.931000",
+        "__v": 0
+    },
+    {
+        "l_id": 3,
+        "userEmail": "nysam.momanyi@gmail.com",
+        "userImage": "https://www.gravatar.com/avatar/48732bb86c606efcf3188dea4effccc7?d=identicon",
+        "rating": 3,
+        "comment": "Needs new floor tiles",
+        "createdAt": "2025-01-10T12:50:15.194000",
+        "__v": 0
+    },
+    {
+        "l_id": 3,
+        "userEmail": "writer4652@gmail.com",
+        "userImage": "https://www.gravatar.com/avatar/cbe43390b3e8c1a8bdaab7a8b4706732?d=identicon",
+        "rating": 4,
+        "comment": "Decent homes !",
+        "createdAt": "2025-01-10T12:50:56.628000",
+        "__v": 0
+    },
+    {
+        "l_id": 3,
+        "userEmail": "good.ie.grammarly@gmail.com",
+        "userImage": "https://www.gravatar.com/avatar/1ae9acef0dbdf8ca242d96f25c1e7568?d=identicon",
+        "rating": 3,
+        "comment": "Needs some changes done. Most of the floors were worn out, the windows were a bit shaky. The car parking is also dark. The home manager should really consider an upgrade.",
+        "createdAt": "2025-01-10T12:52:29.163000",
+        "__v": 0
+    },
+    {
+        "l_id": 3,
+        "userEmail": "snyaanga@kabarak.ac.ke",
+        "userImage": "https://www.gravatar.com/avatar/845cbfb6bb3ceb58e5b7bb83ab016ed1?d=identicon",
+        "rating": 4,
+        "comment": "Not too bad. But the parking lighting definitely needs an improvement!",
+        "createdAt": "2025-01-10T12:53:26.659000",
+        "__v": 0
+    }
+]

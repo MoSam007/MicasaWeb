@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { Types } from 'mongoose';
 import User from '../models/user';
-import { uploadToStorage } from '../utils/storage';
+// import { uploadToStorage } from '../utils/storage';
 import { createActivityLog } from '../utils/activityLogger';
 import { AppError } from '../utils/ErrorHandler';
 import { DecodedIdToken } from 'firebase-admin/auth';
@@ -324,3 +324,7 @@ export const toggleUserStatus = async (req: AuthenticatedRequest, res: Response)
     res.status(500).json({ message: 'Error toggling user status', error });
   }
 };
+
+function uploadToStorage(file: Express.Multer.File) {
+  throw new Error('Function not implemented.');
+}
