@@ -1,5 +1,7 @@
 import os
 from pathlib import Path
+import firebase_admin
+from firebase_admin import credentials
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'your-secret-key'
@@ -86,3 +88,9 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+FIREBASE_CREDENTIALS_PATH = os.path.join(BASE_DIR, 'config', 'serviceAccount.json')
+
+if not firebase_admin._apps:
+    cred = credentials.Certificate(FIREBASE_CREDENTIALS_PATH)
+    firebase_admin.initialize_app(cred)
