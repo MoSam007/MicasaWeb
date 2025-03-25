@@ -1,9 +1,10 @@
 from django.db import models
 
 class Review(models.Model):
-    l_id = models.IntegerField(db_index=True)  # Refers to Listing
-    user_email = models.EmailField()
-    user_image = models.URLField(blank=True, null=True)
+    review_id = models.AutoField(primary_key=True)
+    l_id = models.IntegerField()  # Refers to Listing
+    user = models.EmailField()
+    # user_image = models.URLField(blank=True, null=True) // define this in db and set it to be extraced from user's email
     rating = models.IntegerField()
     comment = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
