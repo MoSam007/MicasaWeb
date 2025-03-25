@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import User from '../models/user';
-import { uploadToStorage } from '../utils/storage';
+// import { uploadToStorage } from '../utils/storage';
 import { AppError } from '../utils/ErrorHandler';
 import { DecodedIdToken } from 'firebase-admin/auth';
 
@@ -18,10 +18,10 @@ export const updateProfile = async (req: AuthenticatedRequest, res: Response) =>
     const userId = req.user.uid;
     const updates = req.body;
     
-    if (req.file) {
-      const imageUrl = await uploadToStorage(req.file);
-      updates.profileImage = imageUrl;
-    }
+    // if (req.file) {
+    //   const imageUrl = await uploadToStorage(req.file);
+    //   updates.profileImage = imageUrl;
+    // }
 
     const user = await User.findOneAndUpdate(
       { uid: userId },
