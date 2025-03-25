@@ -14,4 +14,4 @@ class Review(models.Model):
         ordering = ['-created_at']
 
     def __str__(self):
-        return f"Review {self.review_idid} - Listing {self.l_id}"
+        return f"Review {self.review_id} - Listing {self.l_id}"
