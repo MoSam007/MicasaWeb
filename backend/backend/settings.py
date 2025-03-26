@@ -22,6 +22,7 @@ INSTALLED_APPS = [
     'apps.reviews',
     'apps.users',
     'apps.wishlist',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
@@ -32,6 +33,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "micasa.middlewares.FirebaseAuthMiddleware",
 ]
 
 ROOT_URLCONF = 'micasa.urls'
@@ -80,6 +82,8 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+AUTH_USER_MODEL = "users.UserProfile"
 
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'

@@ -6,6 +6,8 @@ from .models import UserProfile
 from .serializers import UserSerializer
 from firebase_admin import auth
 from django.shortcuts import get_object_or_404
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 
 @api_view(['GET'])
 def get_user_profile(request, uid):
@@ -66,3 +68,14 @@ def search_users(request):
     
     serializer = UserSerializer(users, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
+
+@csrf_exempt
+def get_user_info(request):
+    if not hasattr(request, "user"):
+        return JsonResponse({"message": "Unauthorized"}, status=401)
+    
+    return JsonResponse({
+        "uid": request.user.get("uid"),
+        "email": request.user.get("email"),
+        "name": request.user.get("name", ""),
+    })
