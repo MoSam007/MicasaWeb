@@ -8,12 +8,12 @@ interface IListing {
 const Gallery: React.FC = () => {
   const { l_id } = useParams<{ l_id: string }>();
   const [listing, setListing] = useState<IListing | null>(null);
-  const backendUrl = "http://localhost:5000";
+  const backendUrl = "http://127.0.0.1:8000/";
 
   useEffect(() => {
     const fetchListing = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/api/listings/${l_id}`);
+        const response = await fetch(`http://127.0.0.1:8000/api/listings/${l_id}`);
         const data = await response.json();
         setListing(data);
       } catch (error) {

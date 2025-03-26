@@ -105,7 +105,7 @@ const ListingDetail: React.FC = () => {
       if (currentUser) {
         try {
           const response = await fetch(
-            `http://localhost:5000/api/wishlist/check/${l_id}`,
+            `http://127.0.0.1:8000/api/wishlist/check/${l_id}`,
             {
               headers: {
                 Authorization: `Bearer ${await currentUser.getIdToken()}`,
@@ -131,7 +131,7 @@ const ListingDetail: React.FC = () => {
 
     try {
       const response = await fetch(
-        `http://localhost:5000/api/wishlist/${l_id}`,
+        `http://127.0.0.1:8000/api/wishlist/${l_id}`,
         {
           method: 'POST',
           headers: {
@@ -150,7 +150,7 @@ const ListingDetail: React.FC = () => {
   if (error) return <div className="text-red-600">{error}</div>;
   if (!listing) return <div>Listing not found</div>;
 
-  const backendUrl = 'http://localhost:5000';
+  const backendUrl = 'http://127.0.0.1:8000';
 
   const getAmenityIcon = (amenity: string) => {
     const amenityLower = amenity.toLowerCase();

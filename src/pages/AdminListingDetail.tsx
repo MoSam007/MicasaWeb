@@ -20,7 +20,7 @@ const AdminListingDetail: React.FC = () => {
   const [notification, setNotification] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  const backendUrl = "http://localhost:5000";
+  const backendUrl = "http://127.0.0.1:8000";
 
   useEffect(() => {
     // Fetch the specific listing

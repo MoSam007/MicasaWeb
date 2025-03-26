@@ -20,7 +20,7 @@ const AdminListingManager: React.FC = () => {
   useEffect(() => {
     // Fetch listings from the backend
     async function fetchListings() {
-      const response = await fetch('http://localhost:5000/api/listings');
+      const response = await fetch('http://127.0.0.1:8000/api/listings');
       const data = await response.json();
       setListings(data);
     }
@@ -31,7 +31,7 @@ const AdminListingManager: React.FC = () => {
     navigate(`/admin/listings/${l_id}`);
   };
   
-  const backendUrl = "http://localhost:5000";
+  const backendUrl = "http://127.0.0.1:8000";
   
   return (
     <div className="p-4">

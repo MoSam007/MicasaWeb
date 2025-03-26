@@ -32,7 +32,7 @@ const AddListingForm: React.FC = () => {
     imageFiles.forEach((file) => formData.append('images', file));
 
     try {
-      const response = await fetch('http://localhost:5000/api/listings', {
+      const response = await fetch('http://127.0.0.1:8000/api/listings', {
         method: 'POST',
         body: formData,
       });

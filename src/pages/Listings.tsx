@@ -24,7 +24,7 @@ const Listings: React.FC = () => {
   useEffect(() => {
     const fetchListings = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/listings');
+        const response = await fetch('http://127.0.0.1:8000/api/listings');
         const data = await response.json();
         setListings(data);
       } catch (error) {

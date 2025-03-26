@@ -28,7 +28,7 @@ const App: React.FC = () => {
   useEffect(() => {
     async function fetchListings() {
       setIsLoading(true); // Set loading state
-      const response = await fetch('http://localhost:5000/api/listings');
+      const response = await fetch('http://127.0.0.1:8000/api/listings');
       const data = await response.json();
       setListings(data);
       setFilteredListings(data);
