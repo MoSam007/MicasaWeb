@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom'; 
 import {FaHeart, FaAngleLeft , FaAngleRight} from 'react-icons/fa';
-
+import API_BASE_URL from '../../backend/src/config';
 interface Listing {
   l_id: string | number;
   title: string;
@@ -24,7 +24,7 @@ const Listings: React.FC = () => {
   useEffect(() => {
     const fetchListings = async () => {
       try {
-        const response = await fetch('http://127.0.0.1:8000/api/listings');
+        const response = await fetch(`${API_BASE_URL}/listings/`);
         const data = await response.json();
         setListings(data);
       } catch (error) {

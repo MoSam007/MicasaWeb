@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-
+import API_BASE_URL from '../../backend/src/config';
 interface IListing {
   imageUrls: string[];
 }
@@ -13,7 +13,7 @@ const Gallery: React.FC = () => {
   useEffect(() => {
     const fetchListing = async () => {
       try {
-        const response = await fetch(`http://127.0.0.1:8000/api/listings/${l_id}`);
+        const response = await fetch(`${API_BASE_URL}/listings/${l_id}`);
         const data = await response.json();
         setListing(data);
       } catch (error) {

@@ -8,7 +8,7 @@ import {
   FaHospital, FaWater, FaCarSide, FaWineGlass, FaUmbrella, FaHeart,
 } from 'react-icons/fa';
 import { useAuth } from '../auth/authContext';
-
+import API_BASE_URL from '../../backend/src/config';
 
 // Skeleton Loader
 const SkeletonLoader: React.FC = () => (
@@ -84,7 +84,7 @@ const ListingDetail: React.FC = () => {
   useEffect(() => {
     const fetchListing = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/api/listings/${l_id}`);
+        const response = await fetch(`${API_BASE_URL}/listings/${l_id}`);
         if (!response.ok) {
           throw new Error('Error fetching listing');
         }

@@ -19,6 +19,7 @@ import Register from './pages/Register';
 import FAQ from './pages/FAQ';
 import Profile from './components/Profile';
 import Wishlist from './pages/Wishlist';
+import API_BASE_URL from '../backend/src/config';
 
 const App: React.FC = () => {
   const [listings, setListings] = useState<IListing[]>([]);
@@ -28,7 +29,7 @@ const App: React.FC = () => {
   useEffect(() => {
     async function fetchListings() {
       setIsLoading(true); // Set loading state
-      const response = await fetch('http://127.0.0.1:8000/api/listings');
+      const response = await fetch(`${API_BASE_URL}/listings/`);
       const data = await response.json();
       setListings(data);
       setFilteredListings(data);

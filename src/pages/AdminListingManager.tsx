@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-
+import API_BASE_URL from '../../backend/src/config';
 interface IListing {
   l_id: number;
   title: string;
@@ -20,7 +20,7 @@ const AdminListingManager: React.FC = () => {
   useEffect(() => {
     // Fetch listings from the backend
     async function fetchListings() {
-      const response = await fetch('http://127.0.0.1:8000/api/listings');
+      const response = await fetch(`${API_BASE_URL}/listings`);
       const data = await response.json();
       setListings(data);
     }

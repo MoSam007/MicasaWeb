@@ -22,5 +22,5 @@
   },
   "include": [
     "src"
-, "backend/src/app.ts", "backend/src/server.ts", "backend/src/config"  ]
+, "backend/src/app.ts", "backend/src/server.ts", "backend/src/config.ts"  ]
 }
