@@ -19,7 +19,7 @@ import Register from './pages/Register';
 import FAQ from './pages/FAQ';
 import Profile from './components/Profile';
 import Wishlist from './pages/Wishlist';
-import API_BASE_URL from '../backend/src/config';
+import API_BASE_URL from '../src/config';
 
 const App: React.FC = () => {
   const [listings, setListings] = useState<IListing[]>([]);

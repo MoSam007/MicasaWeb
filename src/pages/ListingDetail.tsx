@@ -8,7 +8,7 @@ import {
   FaHospital, FaWater, FaCarSide, FaWineGlass, FaUmbrella, FaHeart,
 } from 'react-icons/fa';
 import { useAuth } from '../auth/authContext';
-import API_BASE_URL from '../../backend/src/config';
+import API_BASE_URL from '../../src/config';
 
 // Skeleton Loader
 const SkeletonLoader: React.FC = () => (

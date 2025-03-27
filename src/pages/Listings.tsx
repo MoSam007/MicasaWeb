@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom'; 
 import {FaHeart, FaAngleLeft , FaAngleRight} from 'react-icons/fa';
-import API_BASE_URL from '../../backend/src/config';
+import API_BASE_URL from '../../src/config';
 interface Listing {
   l_id: string | number;
   title: string;

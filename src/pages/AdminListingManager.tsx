@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import API_BASE_URL from '../../backend/src/config';
+import API_BASE_URL from '../../src/config';
 interface IListing {
   l_id: number;
   title: string;
