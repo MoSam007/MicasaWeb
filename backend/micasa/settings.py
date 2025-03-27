@@ -8,6 +8,17 @@ SECRET_KEY = 'your-secret-key'
 DEBUG = True
 ALLOWED_HOSTS = []
 
+MEDIA_URL = "/uploads/"
+MEDIA_ROOT = os.path.join(BASE_DIR, "uploads")
+
+from django.conf import settings
+from django.conf.urls.static import static
+
+if settings.DEBUG:
+    from django.urls import path
+    urlpatterns = []  # Define urlpatterns as an empty list
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+ 
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',

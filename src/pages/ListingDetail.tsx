@@ -89,8 +89,10 @@ const ListingDetail: React.FC = () => {
           throw new Error('Error fetching listing');
         }
         const data = await response.json();
+        console.log("Fetched listing data:", data);  // Debugging API response
         setListing(data);
       } catch (err) {
+        console.error(err);
         setError('Failed to load listing.');
       } finally {
         setLoading(false);
@@ -193,7 +195,7 @@ const ListingDetail: React.FC = () => {
           />
         )}
         <div className="grid grid-cols-2 gap-2">
-          {listing.imageUrls.slice(1, 5).map((url, index) => (
+          {listing.imageUrls?.slice(1, 5)?.map((url, index) => (
             <img
               key={index}
               src={`${backendUrl}/uploads/${url}`}
