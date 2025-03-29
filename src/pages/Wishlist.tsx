@@ -8,7 +8,7 @@ interface WishlistItem {
   title: string;
   price: string;
   location: string;
-  imageUrls: string[];
+  image_urls: string[];
 }
 
 const Wishlist: React.FC = () => {
@@ -22,7 +22,7 @@ const Wishlist: React.FC = () => {
 
   const fetchWishlistItems = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/wishlist', {
+      const response = await fetch('http://127.0.0.1:8000/api/wishlist', {
         headers: {
           'Authorization': `Bearer ${await currentUser?.getIdToken()}`
         }
@@ -38,7 +38,7 @@ const Wishlist: React.FC = () => {
 
   const removeFromWishlist = async (listingId: number) => {
     try {
-      await fetch(`http://localhost:5000/api/wishlist/${listingId}`, {
+      await fetch(`http://127.0.0.1:8000/api/wishlist/${listingId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${await currentUser?.getIdToken()}`
@@ -94,7 +94,7 @@ const Wishlist: React.FC = () => {
             >
               <Link to={`/listing/${item.l_id}`}>
                 <img
-                  src={`http://localhost:5000/uploads/${item.imageUrls[0]}`}
+                  src={`http://127.0.0.1:8000/uploads/${item.image_urls[0]}`}
                   alt={item.title}
                   className="w-full h-48 object-cover"
                 />
