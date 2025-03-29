@@ -9,7 +9,7 @@ class ListingSerializer(serializers.ModelSerializer):
         fields = '__all__'
         
     def get_image_urls(self, obj):
-        """Convert stored comma-separated string to list of image filenames"""
+        """Convert stored filenames to full URLs"""
         request = self.context.get('request')
         if obj.image_urls:
             # Check if image_urls is already a list or still a string
@@ -18,7 +18,10 @@ class ListingSerializer(serializers.ModelSerializer):
             else:
                 # Split by comma and filter out empty strings
                 urls = [url.strip() for url in obj.image_urls.split(',') if url.strip()]
-                
-            # Return just the filenames - the frontend will construct the full URLs
-            return urls
+            
+            # Construct full URLs with media path
+            if request:
+                base_url = request.build_absolute_uri('/').rstrip('/')
+                return [f"{base_url}/uploads/{url}" for url in urls]
+            return [f"/uploads/{url}" for url in urls]
         return []

@@ -10,7 +10,7 @@ interface Listing {
   location: string;
   price: string;
   rating: number;
-  imageUrls: string[];
+  image_urls: string[]; // This will now contain full URLs
   amenities: string[];
   likes: number;
 }
@@ -30,7 +30,13 @@ const Listings: React.FC = () => {
     const fetchListings = async () => {
       try {
         const response = await fetch(`${API_BASE_URL}/listings/`);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        
         const data = await response.json();
+        console.log("Fetched data:", data); // Debug: Check what data is coming from API
 
         if (!Array.isArray(data)) {
           throw new Error('Invalid data format');
@@ -52,30 +58,33 @@ const Listings: React.FC = () => {
     navigate(`/listing/${id}`);
   };
 
-  const handleNextImage = (id: number | string) => {
+  const handleNextImage = (id: number | string, e: React.MouseEvent) => {
+    e.stopPropagation();
     const listing = listings.find((listing) => listing.l_id === id);
-    if (!listing || !Array.isArray(listing.imageUrls) || listing.imageUrls.length === 0) return;
+    if (!listing || !Array.isArray(listing.image_urls) || listing.image_urls.length === 0) return;
 
     setImageIndexes((prev) => ({
       ...prev,
-      [id]: ((prev[id] || 0) + 1) % listing.imageUrls.length,
+      [id]: ((prev[id] || 0) + 1) % listing.image_urls.length,
     }));
   };
 
-  const handlePrevImage = (id: number | string) => {
+  const handlePrevImage = (id: number | string, e: React.MouseEvent) => {
+    e.stopPropagation();
     const listing = listings.find((listing) => listing.l_id === id);
-    if (!listing || !Array.isArray(listing.imageUrls) || listing.imageUrls.length === 0) return;
+    if (!listing || !Array.isArray(listing.image_urls) || listing.image_urls.length === 0) return;
 
     setImageIndexes((prev) => ({
       ...prev,
-      [id]: (prev[id] || 0) === 0 ? listing.imageUrls.length - 1 : (prev[id] || 0) - 1,
+      [id]: (prev[id] || 0) === 0 ? listing.image_urls.length - 1 : (prev[id] || 0) - 1,
     }));
   };
 
   if (loading) return <p className="text-center">Loading listings...</p>;
   if (error) return <p className="text-center text-red-500">{error}</p>;
 
-  const handleLike = async (id: string | number) => {
+  const handleLike = async (id: string | number, e: React.MouseEvent) => {
+    e.stopPropagation();
     if (!loggedIn) {
       alert('Please log in to like a listing.');
       return;
@@ -106,35 +115,52 @@ const Listings: React.FC = () => {
               className="relative border rounded-lg overflow-hidden shadow-md cursor-pointer group"
               onClick={() => handleClick(listing.l_id)}
             >
-              {/* Image */}
-              <img
-                src={listing.imageUrls?.length > 0 ? `${backendUrl}/uploads/${listing.imageUrls[imageIndexes[listing.l_id] || 0]}` : "/placeholder.jpg"}
-                alt={listing.title}
-                className="w-full h-48 object-cover"
-                style={{ height: '300px', width: '100%', objectFit: 'cover' }}
-              />
+              {/* Image - now using direct URL from API */}
+              {listing.image_urls && listing.image_urls.length > 0 ? (
+                <img
+                  src={listing.image_urls[imageIndexes[listing.l_id] || 0]}
+                  alt={listing.title}
+                  className="w-full h-48 object-cover"
+                  style={{ height: '300px', width: '100%', objectFit: 'cover' }}
+                  onError={(e) => {
+                    console.error("Image loading error:", e);
+                    (e.target as HTMLImageElement).src = "/placeholder.jpg";
+                  }}
+                />
+              ) : (
+                <img
+                  src="backend/public/default-avatar.jpeg"
+                  alt="No image available"
+                  className="w-full h-48 object-cover"
+                  style={{ height: '300px', width: '100%', objectFit: 'cover' }}
+                />
+              )}
               
               {/* Navigation Buttons */}
-              <button 
-                onClick={(e) => { e.stopPropagation(); handlePrevImage(listing.l_id); }}
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 bg-gray-500 text-white rounded-full p-3 opacity-0 group-hover:opacity-100 transition duration-300 hover:bg-gray-300"
-              >
-                <FaAngleLeft />
-              </button>
-              <button 
-                onClick={(e) => { e.stopPropagation(); handleNextImage(listing.l_id); }}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 bg-gray-500 text-white rounded-full p-3 opacity-0 group-hover:opacity-100 transition duration-300 hover:bg-gray-300"
-              >
-                <FaAngleRight />
-              </button>
+              {listing.image_urls && listing.image_urls.length > 1 && (
+                <>
+                  <button 
+                    onClick={(e) => handlePrevImage(listing.l_id, e)}
+                    className="absolute left-3 top-1/2 transform -translate-y-1/2 bg-gray-500 text-white rounded-full p-3 opacity-0 group-hover:opacity-100 transition duration-300 hover:bg-gray-300"
+                  >
+                    <FaAngleLeft />
+                  </button>
+                  <button 
+                    onClick={(e) => handleNextImage(listing.l_id, e)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 bg-gray-500 text-white rounded-full p-3 opacity-0 group-hover:opacity-100 transition duration-300 hover:bg-gray-300"
+                  >
+                    <FaAngleRight />
+                  </button>
+                </>
+              )}
 
               {/* Image Progress Indicator */}
-              {listing.imageUrls?.length > 0 && (
+              {listing.image_urls && listing.image_urls.length > 1 && (
                 <div className="absolute bottom-1/3 left-1/2 transform -translate-x-1/2 flex space-x-1">
-                  {listing.imageUrls
+                  {listing.image_urls
                     .slice(
                       Math.max(0, (imageIndexes[listing.l_id] || 0) - 2),
-                      Math.min(listing.imageUrls.length, (imageIndexes[listing.l_id] || 0) + 4)
+                      Math.min(listing.image_urls.length, (imageIndexes[listing.l_id] || 0) + 4)
                     )
                     .map((_, index) => {
                       const actualIndex = Math.max(0, (imageIndexes[listing.l_id] || 0) - 2) + index;
@@ -167,10 +193,7 @@ const Listings: React.FC = () => {
                     ? 'bg-yellow-500'
                     : 'bg-gray-400 hover:bg-yellow-500'
                 }`}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleLike(listing.l_id);
-                }}
+                onClick={(e) => handleLike(listing.l_id, e)}
               >
                 <FaHeart />
               </button>
