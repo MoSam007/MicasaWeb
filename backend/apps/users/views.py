@@ -1,13 +1,11 @@
-from django.contrib.auth.models import User
+from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
-from .models import UserProfile
-from .serializers import UserSerializer
-from firebase_admin import auth
-from django.shortcuts import get_object_or_404
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+from .models import UserProfile
+from .serializers import UserSerializer
 
 @api_view(['GET'])
 def get_user_profile(request, uid):
@@ -19,10 +17,10 @@ def get_user_profile(request, uid):
 @api_view(['PATCH'])
 def update_user(request, uid):
     """Update user profile details"""
-    user = get_object_or_404(UserProfile, uid=uid)
-    if request.user.uid != uid and not request.user.is_admin:
+    if not request.user or request.user.uid != uid and not request.user.is_admin:
         return Response({'error': 'Permission denied'}, status=status.HTTP_403_FORBIDDEN)
 
+    user = get_object_or_404(UserProfile, uid=uid)
     serializer = UserSerializer(user, data=request.data, partial=True)
     if serializer.is_valid():
         serializer.save()
@@ -32,7 +30,7 @@ def update_user(request, uid):
 @api_view(['PATCH'])
 def update_user_role(request, uid):
     """Update a user's role (Admin only)"""
-    if not request.user.is_admin:
+    if not request.user or not request.user.is_admin:
         return Response({'error': 'Permission denied'}, status=status.HTTP_403_FORBIDDEN)
 
     user = get_object_or_404(UserProfile, uid=uid)
@@ -47,7 +45,7 @@ def update_user_role(request, uid):
 @api_view(['PATCH'])
 def toggle_user_status(request, uid):
     """Activate or deactivate a user account (Admin only)"""
-    if not request.user.is_admin:
+    if not request.user or not request.user.is_admin:
         return Response({'error': 'Permission denied'}, status=status.HTTP_403_FORBIDDEN)
 
     user = get_object_or_404(UserProfile, uid=uid)
@@ -55,27 +53,15 @@ def toggle_user_status(request, uid):
     user.save()
     return Response({'message': 'User status updated successfully'}, status=status.HTTP_200_OK)
 
-@api_view(['GET'])
-def search_users(request):
-    """Search for users by name or email"""
-    if not request.user.is_admin:
-        return Response({'error': 'Permission denied'}, status=status.HTTP_403_FORBIDDEN)
-
-    query = request.query_params.get('query', '')
-    users = UserProfile.objects.filter(
-        username__icontains=query
-    ) | UserProfile.objects.filter(email__icontains=query)
-    
-    serializer = UserSerializer(users, many=True)
-    return Response(serializer.data, status=status.HTTP_200_OK)
-
 @csrf_exempt
 def get_user_info(request):
-    if not hasattr(request, "user"):
+    """Retrieve authenticated user info"""
+    if not request.user:
         return JsonResponse({"message": "Unauthorized"}, status=401)
     
     return JsonResponse({
-        "uid": request.user.get("uid"),
-        "email": request.user.get("email"),
-        "name": request.user.get("name", ""),
+        "uid": request.user.uid,
+        "email": request.user.email,
+        "name": request.user.username,
+        "role": request.user.role,
     })

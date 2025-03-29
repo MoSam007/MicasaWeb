@@ -13,15 +13,16 @@ class UserProfile(AbstractUser):
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["username", "uid"]
 
+    @property
+    def is_admin(self):
+        return self.role == "admin"
+
     def toggle_wishlist(self, listing):
-        """Toggle a listing in the user's wishlist and update listing likes."""
+        """Toggle a listing in the user's wishlist."""
         if listing in self.wishlist.all():
             self.wishlist.remove(listing)
-            listing.likes = max(0, listing.likes - 1)
         else:
             self.wishlist.add(listing)
-            listing.likes += 1
-        listing.save()
         self.save()
 
     def __str__(self):

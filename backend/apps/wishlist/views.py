@@ -1,42 +1,77 @@
-from rest_framework import status
-from rest_framework.response import Response
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import get_object_or_404
-from .models import Listing
-from django.contrib.auth import get_user_model
-from .serializers import WishlistSerializer
+from .models import Wishlist
+from apps.listings.models import Listing
+from apps.users.firebase_auth import firebase_auth_required
+import json
 
-User = get_user_model()
+@csrf_exempt
+@firebase_auth_required
+def toggle_wishlist(request):
+    """Add or remove a listing from the user's wishlist."""
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            listing_id = data.get("listing_id")
+            
+            if not listing_id:
+                return JsonResponse({"error": "Listing ID is required."}, status=400)
 
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def toggle_wishlist(request, listing_id):
-    user = request.user
-    listing = get_object_or_404(Listing, l_id=listing_id)
+            listing = get_object_or_404(Listing, id=listing_id)
+            wishlist_item, created = Wishlist.objects.get_or_create(user=request.user, listing=listing)
 
-    user.toggle_wishlist(listing)
+            if not created:
+                wishlist_item.delete()
+                return JsonResponse({"message": "Removed from wishlist"}, status=200)
 
-    return Response({
-        "wishlist": WishlistSerializer(user).data['wishlist'],
-        "likes": listing.likes,
-        "isInWishlist": listing in user.wishlist.all()
-    }, status=status.HTTP_200_OK)
+            return JsonResponse({"message": "Added to wishlist"}, status=201)
+        
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "Invalid JSON data"}, status=400)
+    
+    return JsonResponse({"error": "Invalid request method"}, status=405)
 
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def check_wishlist_status(request, listing_id):
-    user = request.user
-    listing = get_object_or_404(Listing, l_id=listing_id)
-
-    return Response({
-        "isInWishlist": listing in user.wishlist.all(),
-        "likes": listing.likes
-    }, status=status.HTTP_200_OK)
-
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@firebase_auth_required
 def get_wishlist(request):
-    user = request.user
-    serializer = WishlistSerializer(user)
-    return Response(serializer.data['wishlist'], status=status.HTTP_200_OK)
+    """Retrieve all listings in the user's wishlist."""
+    wishlist_items = Wishlist.objects.filter(user=request.user).select_related("listing")
+    listings = [
+        {
+            "id": item.listing.id,
+            "title": item.listing.title,
+            "price": item.listing.price,
+            "image": item.listing.image.url if item.listing.image else None,
+        }
+        for item in wishlist_items
+    ]
+    return JsonResponse({"wishlist": listings}, status=200)
+
+@csrf_exempt
+@firebase_auth_required
+def check_wishlist_status(request, listing_id):
+    """Check if a listing is in the user's wishlist."""
+    exists = Wishlist.objects.filter(user=request.user, listing_id=listing_id).exists()
+    return JsonResponse({"in_wishlist": exists}, status=200)
+
+# Custom Firebase authentication decorator
+from functools import wraps
+from django.http import JsonResponse
+from apps.users.firebase_auth import verify_firebase_token
+
+def firebase_auth_required(view_func):
+    @wraps(view_func)
+    def wrapper(request, *args, **kwargs):
+        auth_header = request.headers.get("Authorization")
+        if not auth_header or not auth_header.startswith("Bearer "):
+            return JsonResponse({"error": "Authentication required"}, status=401)
+        
+        id_token = auth_header.split("Bearer ")[1]
+        user = verify_firebase_token(id_token)
+        if not user:
+            return JsonResponse({"error": "Invalid or expired token"}, status=401)
+        
+        request.user = user
+        return view_func(request, *args, **kwargs)
+    
+    return wrapper

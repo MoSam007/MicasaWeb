@@ -104,50 +104,59 @@ const ListingDetail: React.FC = () => {
 
   useEffect(() => {
     const checkWishlistStatus = async () => {
-      if (currentUser) {
-        try {
-          const response = await fetch(
-            `http://127.0.0.1:8000/api/wishlist/check/${l_id}`,
-            {
-              headers: {
-                Authorization: `Bearer ${await currentUser.getIdToken()}`,
-              },
-            }
-          );
-          const data = await response.json();
-          setWishlistState(data);
-        } catch (error) {
-          console.error('Error checking wishlist status:', error);
-        }
+      if (!currentUser) return;
+  
+      try {
+        const token = await currentUser.getIdToken();
+        const response = await fetch(`${API_BASE_URL}/wishlist/check/${l_id}/`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+  
+        if (!response.ok) throw new Error(`Error: ${response.status}`);
+  
+        const data = await response.json();
+        console.log("Wishlist Status:", data);
+  
+        setWishlistState({
+          isInWishlist: data.in_wishlist, // Ensure boolean response
+          likes: data.likes ?? 0, // Default to 0 if undefined
+        });
+      } catch (error) {
+        console.error("Error checking wishlist status:", error);
+        setWishlistState((prev) => ({ ...prev, isInWishlist: false }));
       }
     };
-
+  
     checkWishlistStatus();
   }, [l_id, currentUser]);
-
+  
   const handleLike = async () => {
     if (!currentUser) {
-      navigate('/login');
+      navigate("/login");
       return;
     }
-
+  
     try {
-      const response = await fetch(
-        `http://127.0.0.1:8000/api/wishlist/${l_id}`,
-        {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${await currentUser.getIdToken()}`,
-          },
-        }
-      );
+      const token = await currentUser.getIdToken();
+      const response = await fetch(`${API_BASE_URL}/wishlist/${l_id}/`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+  
+      if (!response.ok) throw new Error(`Error: ${response.status}`);
+  
       const data = await response.json();
-      setWishlistState(data);
+      console.log("Updated Wishlist Data:", data);
+  
+      setWishlistState({
+        isInWishlist: data.in_wishlist,
+        likes: data.likes ?? 0,
+      });
     } catch (error) {
-      console.error('Error toggling wishlist:', error);
+      console.error("Error toggling wishlist:", error);
     }
   };
-
+  
   if (loading) return <SkeletonLoader />;
   if (error) return <div className="text-red-600">{error}</div>;
   if (!listing) return <div>Listing not found</div>;
