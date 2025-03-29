@@ -4,21 +4,23 @@ import firebase_admin
 from firebase_admin import credentials
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+
 SECRET_KEY = 'your-secret-key'
 DEBUG = True
-ALLOWED_HOSTS = []
 
-MEDIA_URL = "/uploads/"
+ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
+
+# Media Files (Uploaded Images)
+MEDIA_URL = '/uploads/'
 MEDIA_ROOT = os.path.join(BASE_DIR, "uploads")
 
-from django.conf import settings
-from django.conf.urls.static import static
+# Static Files
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # Fixed static root
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static')
+]
 
-if settings.DEBUG:
-    from django.urls import path
-    urlpatterns = []  # Define urlpatterns as an empty list
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
- 
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -72,7 +74,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",  # React frontend
 ]
 
-# Database configuration for MySQL
+# Database Configuration for MySQL
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
@@ -85,18 +87,10 @@ DATABASES = {
 }
 
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
+    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
 AUTH_USER_MODEL = "users.UserProfile"
@@ -106,9 +100,9 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
-STATIC_URL = '/static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# Firebase Configuration
 FIREBASE_CREDENTIALS_PATH = os.path.join(BASE_DIR, 'config', 'serviceAccount.json')
 
 if not firebase_admin._apps:

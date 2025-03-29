@@ -10,7 +10,7 @@ import {
 import { useAuth } from '../auth/authContext';
 import API_BASE_URL from '../../src/config';
 
-// Skeleton Loader
+// Skeleton Loader (create seperate component if needed)
 const SkeletonLoader: React.FC = () => (
   <div className="animate-pulse px-6 p-6 sm:p-8 md:p-10">
     {/* Image Grid Skeleton */}

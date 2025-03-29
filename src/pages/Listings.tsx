@@ -14,6 +14,7 @@ interface Listing {
   amenities: string[];
   likes: number;
 }
+
 const backendUrl = "http://127.0.0.1:8000";
 
 const Listings: React.FC = () => {
@@ -107,7 +108,7 @@ const Listings: React.FC = () => {
             >
               {/* Image */}
               <img
-                src={listing.imageUrls?.length > 0 ? `${backendUrl}${listing.imageUrls[imageIndexes[listing.l_id] || 0]}` : "/placeholder.jpg"}
+                src={listing.imageUrls?.length > 0 ? `${backendUrl}/uploads/${listing.imageUrls[imageIndexes[listing.l_id] || 0]}` : "/placeholder.jpg"}
                 alt={listing.title}
                 className="w-full h-48 object-cover"
                 style={{ height: '300px', width: '100%', objectFit: 'cover' }}

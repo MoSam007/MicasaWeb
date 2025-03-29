@@ -9,7 +9,4 @@ urlpatterns = [
     path("api/reviews/", include("apps.reviews.urls")), 
     path("api/wishlist/", include("apps.wishlist.urls")),  
     path("api/users/", include("apps.users.urls")), 
-]
-
-if settings.DEBUG:  # Only serve media files in development
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
