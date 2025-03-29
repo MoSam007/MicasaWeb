@@ -14,15 +14,19 @@ import os
 def get_all_listings(request):
     listings = Listing.objects.all()
     
-    # Ensure image URLs are properly constructed
+    # Process each listing
     for listing in listings:
-        if isinstance(listing.image_urls, list):  # ✅ Check if it's already a list
-            listing.image_urls = [
-                request.build_absolute_uri(f"{settings.MEDIA_URL}{img.strip()}")
-                for img in listing.image_urls if img.strip()
-            ]
+        # Convert image_urls to array if it's a string
+        if isinstance(listing.image_urls, str):
+            listing.image_urls = listing.image_urls.split(',')
+            listing.image_urls = [img.strip() for img in listing.image_urls if img.strip()]
+        
+        # Convert amenities to array if it's a string
+        if isinstance(listing.amenities, str):
+            listing.amenities = listing.amenities.split(',')
+            listing.amenities = [amenity.strip() for amenity in listing.amenities if amenity.strip()]
     
-    serializer = ListingSerializer(listings, many=True)
+    serializer = ListingSerializer(listings, many=True, context={'request': request})
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 # ✅ Get single listing
@@ -31,14 +35,17 @@ def get_listing_by_id(request, l_id):
     try:
         listing = Listing.objects.get(l_id=l_id)
 
-        # Ensure images are properly formatted
-        if isinstance(listing.image_urls, list):  # ✅ Check if it's a list
-            listing.image_urls = [
-                request.build_absolute_uri(f"{settings.MEDIA_URL}{img.strip()}")
-                for img in listing.image_urls if img.strip()
-            ]
+        # Convert image_urls to array if it's a string
+        if isinstance(listing.image_urls, str):
+            listing.image_urls = listing.image_urls.split(',')
+            listing.image_urls = [img.strip() for img in listing.image_urls if img.strip()]
+            
+        # Convert amenities to array if it's a string
+        if isinstance(listing.amenities, str):
+            listing.amenities = listing.amenities.split(',')
+            listing.amenities = [amenity.strip() for amenity in listing.amenities if amenity.strip()]
 
-        serializer = ListingSerializer(listing)
+        serializer = ListingSerializer(listing, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
     except Listing.DoesNotExist:
         return Response({'message': 'Listing not found'}, status=status.HTTP_404_NOT_FOUND)
@@ -59,6 +66,11 @@ def create_listing(request):
     # Generate new l_id
     last_listing = Listing.objects.order_by('-l_id').first()
     new_lid = (last_listing.l_id + 1) if last_listing else 1
+    
+    # Process amenities
+    amenities = data.get('amenities', '')
+    if isinstance(amenities, str):
+        amenities = amenities.split(',')
 
     new_listing = Listing(
         l_id=new_lid,
@@ -67,17 +79,13 @@ def create_listing(request):
         description=data.get('description', ''),
         price=data['price'],
         rating=float(data['rating']),
-        amenities=data.get('amenities', ''),
-        image_urls=",".join(image_filenames)  # Store filenames as a comma-separated string
+        amenities=amenities,
+        image_urls=image_filenames  # Store as a list directly
     )
     new_listing.save()
 
-    # Convert stored filenames to full URLs for response
-    new_listing.image_urls = [
-        request.build_absolute_uri(f"{settings.MEDIA_URL}{img.strip()}") for img in image_filenames
-    ]
-
-    return Response(ListingSerializer(new_listing).data, status=status.HTTP_201_CREATED)
+    serializer = ListingSerializer(new_listing, context={'request': request})
+    return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 # ✅ Update listing
 @api_view(['PUT'])
@@ -91,33 +99,42 @@ def update_listing(request, l_id):
     data = request.data
     image_files = request.FILES.getlist('newImages')
 
-    # Append new images and store only filenames
+    # Append new images
     new_image_filenames = []
     for image in image_files:
         filename = default_storage.save(os.path.join("uploads", image.name), ContentFile(image.read()))
         new_image_filenames.append(os.path.basename(filename))
 
-    # Merge old and new images
-    existing_images = listing.image_urls.split(",") if listing.image_urls else []
-    updated_images = existing_images + new_image_filenames
-    listing.image_urls = ",".join(updated_images)
+    # Get existing images as a list
+    existing_images = []
+    if isinstance(listing.image_urls, str):
+        existing_images = listing.image_urls.split(',')
+        existing_images = [img.strip() for img in existing_images if img.strip()]
+    elif isinstance(listing.image_urls, list):
+        existing_images = listing.image_urls
 
-    # Update other fields
+    # Merge old and new images
+    updated_images = existing_images + new_image_filenames
+    
+    # Process amenities
+    amenities = data.get('amenities', listing.amenities)
+    if isinstance(amenities, str):
+        amenities = amenities.split(',')
+        amenities = [amenity.strip() for amenity in amenities if amenity.strip()]
+
+    # Update fields
     listing.title = data.get('title', listing.title)
     listing.location = data.get('location', listing.location)
     listing.price = data.get('price', listing.price)
     listing.rating = float(data.get('rating', listing.rating))
     listing.description = data.get('description', listing.description)
-    listing.amenities = data.get('amenities', listing.amenities)
+    listing.amenities = amenities
+    listing.image_urls = updated_images
 
     listing.save()
 
-    # Convert stored filenames to full URLs for response
-    listing.image_urls = [
-        request.build_absolute_uri(f"{settings.MEDIA_URL}{img.strip()}") for img in updated_images
-    ]
-
-    return Response(ListingSerializer(listing).data, status=status.HTTP_200_OK)
+    serializer = ListingSerializer(listing, context={'request': request})
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
 # ✅ Delete listing
 @api_view(['DELETE'])
@@ -126,10 +143,18 @@ def delete_listing(request, l_id):
         listing = Listing.objects.get(l_id=l_id)
 
         # Delete associated images
-        for img in listing.image_urls.split(","):
-            image_path = os.path.join(settings.MEDIA_ROOT, img.strip())
-            if os.path.exists(image_path):
-                os.remove(image_path)
+        image_urls = []
+        if isinstance(listing.image_urls, str):
+            image_urls = listing.image_urls.split(',')
+        elif isinstance(listing.image_urls, list):
+            image_urls = listing.image_urls
+            
+        for img in image_urls:
+            img = img.strip()
+            if img:
+                image_path = os.path.join(settings.MEDIA_ROOT, img)
+                if os.path.exists(image_path):
+                    os.remove(image_path)
 
         listing.delete()
         return Response({'message': 'Listing deleted successfully'}, status=status.HTTP_200_OK)

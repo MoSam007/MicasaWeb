@@ -50,29 +50,26 @@ const SkeletonLoader: React.FC = () => (
 );
 
 interface IListing {
-  images: any;
   l_id: number;
   title: string;
   location: string;
   price: string;
   rating: number;
-  imageUrls: string[];
+  image_urls: string[]; // Changed to match backend field name
   description: string;
   amenities: string[];
   likes: number;
 }
-
 
 interface WishlistState {
   isInWishlist: boolean;
   likes: number;
 }
 
-
 const ListingDetail: React.FC = () => {
   const { l_id } = useParams<{ l_id: string }>();
   const navigate = useNavigate();
-  const { currentUser } = useAuth(); // Hook called within the component
+  const { currentUser } = useAuth();
   const [listing, setListing] = useState<IListing | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -90,6 +87,21 @@ const ListingDetail: React.FC = () => {
         }
         const data = await response.json();
         console.log("Fetched listing data:", data);  // Debugging API response
+        
+        // Ensure image_urls is always an array
+        if (typeof data.image_urls === 'string') {
+          data.image_urls = data.image_urls.split(',').map((url: string) => url.trim());
+        } else if (!Array.isArray(data.image_urls)) {
+          data.image_urls = [];
+        }
+        
+        // Ensure amenities is always an array
+        if (typeof data.amenities === 'string') {
+          data.amenities = data.amenities.split(',').map((amenity: string) => amenity.trim());
+        } else if (!Array.isArray(data.amenities)) {
+          data.amenities = [];
+        }
+        
         setListing(data);
       } catch (err) {
         console.error(err);
@@ -161,6 +173,7 @@ const ListingDetail: React.FC = () => {
   if (error) return <div className="text-red-600">{error}</div>;
   if (!listing) return <div>Listing not found</div>;
 
+  // Use backendUrl to construct image URLs
   const backendUrl = 'http://127.0.0.1:8000';
 
   const getAmenityIcon = (amenity: string) => {
@@ -196,23 +209,29 @@ const ListingDetail: React.FC = () => {
     <div className="container mx-auto px-6 py-8">
       {/* Photo Gallery Section */}
       <div className="grid grid-cols-2 gap-4 mb-8">
-        {listing.imageUrls?.[0] && (
+        {listing.image_urls && listing.image_urls.length > 0 ? (
           <img
-            src={`${backendUrl}/uploads/${listing.imageUrls[0]}`}
+            src={listing.image_urls[0].startsWith('http') 
+                ? listing.image_urls[0] 
+                : `${backendUrl}/uploads/${listing.image_urls[0]}`}
             alt="Main Image"
             className="col-span-1 w-full h-96 object-cover rounded-lg shadow-md"
           />
+        ) : (
+          <div className="col-span-1 w-full h-96 bg-gray-200 rounded-lg flex items-center justify-center">
+            <span className="text-gray-500">No image available</span>
+          </div>
         )}
         <div className="grid grid-cols-2 gap-2">
-          {listing.imageUrls?.slice(1, 5)?.map((url, index) => (
+          {listing.image_urls && listing.image_urls.slice(1, 5).map((url, index) => (
             <img
               key={index}
-              src={`${backendUrl}/uploads/${url}`}
+              src={url.startsWith('http') ? url : `${backendUrl}/uploads/${url}`}
               alt={`Thumbnail ${index + 2}`}
               className="w-full h-44 object-cover rounded-lg shadow-md"
             />
           ))}
-          {listing.imageUrls.length > 5 && (
+          {listing.image_urls && listing.image_urls.length > 5 && (
             <Link to={`/listing/${l_id}/gallery`} className="col-span-2 text-center text-blue-500 mt-2">
               View All Photos
             </Link>
@@ -222,22 +241,22 @@ const ListingDetail: React.FC = () => {
 
       {/* Description and Details */}
       <div>
-      <div className="flex items-center space-x-2">
-  <button
-    onClick={handleLike}
-    className={`flex items-center space-x-1 ${
-      wishlistState.isInWishlist ? 'text-red-500' : 'text-gray-500'
-    } hover:text-red-500 transition-colors`}
-  >
-    <FaHeart className={`h-6 w-6 ${
-      wishlistState.isInWishlist ? 'fill-current' : 'stroke-current'
-    }`} />
-    <span>{wishlistState.likes}</span>
-  </button>
-  {wishlistState.isInWishlist && (
-    <span className="text-sm text-gray-500">Added to wishlist</span>
-  )}
-</div>
+        <div className="flex items-center space-x-2">
+          <button
+            onClick={handleLike}
+            className={`flex items-center space-x-1 ${
+              wishlistState.isInWishlist ? 'text-red-500' : 'text-gray-500'
+            } hover:text-red-500 transition-colors`}
+          >
+            <FaHeart className={`h-6 w-6 ${
+              wishlistState.isInWishlist ? 'fill-current' : 'stroke-current'
+            }`} />
+            <span>{wishlistState.likes}</span>
+          </button>
+          {wishlistState.isInWishlist && (
+            <span className="text-sm text-gray-500">Added to wishlist</span>
+          )}
+        </div>
         <h1 className="text-2xl font-semibold">{listing.title}</h1>
         <p className="text-gray-600 mt-2"><strong>Location:</strong> {listing.location}</p>
         <p className="text-gray-800 mt-4"><strong>Price:</strong> {listing.price}</p>
@@ -249,7 +268,7 @@ const ListingDetail: React.FC = () => {
       <div className="mt-8">
         <h2 className="text-lg font-semibold text-gray-900">Amenities</h2>
         <div className="grid grid-cols-2 gap-4 mt-4">
-          {listing.amenities.map((amenity, index) => (
+          {listing.amenities && listing.amenities.map((amenity, index) => (
             <div key={index} className="flex items-center space-x-2">
               <span className="text-yellow-600">{getAmenityIcon(amenity)}</span>
               <span className="text-gray-600 capitalize">{amenity}</span>
@@ -261,7 +280,7 @@ const ListingDetail: React.FC = () => {
       {/* Reviews Section */}
       <ReviewsSection l_id={listing.l_id} />
     </div>
-  );  
+  );
 };
 
 export default ListingDetail;
