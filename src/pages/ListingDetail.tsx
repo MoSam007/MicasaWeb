@@ -78,8 +78,18 @@ const ListingDetail: React.FC = () => {
     likes: 0,
   });
 
+  // Log the route parameter for debugging
+  console.log("Route parameter l_id:", l_id);
+
   useEffect(() => {
     const fetchListing = async () => {
+      // Check if l_id is defined and valid
+      if (!l_id || l_id === 'undefined') {
+        setError('Invalid listing ID');
+        setLoading(false);
+        return;
+      }
+
       try {
         const response = await fetch(`${API_BASE_URL}/listings/${l_id}`);
         if (!response.ok) {
@@ -116,7 +126,8 @@ const ListingDetail: React.FC = () => {
 
   useEffect(() => {
     const checkWishlistStatus = async () => {
-      if (!currentUser) return;
+      // Check if user is logged in and l_id is valid
+      if (!currentUser || !l_id || l_id === 'undefined') return;
   
       try {
         const token = await currentUser.getIdToken();
@@ -145,6 +156,12 @@ const ListingDetail: React.FC = () => {
   const handleLike = async () => {
     if (!currentUser) {
       navigate("/login");
+      return;
+    }
+
+    // Check if l_id is valid before making the API call
+    if (!l_id || l_id === 'undefined') {
+      console.error("Cannot toggle wishlist: Invalid listing ID");
       return;
     }
   

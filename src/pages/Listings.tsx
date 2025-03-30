@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom'; 
 import { FaHeart, FaAngleLeft, FaAngleRight } from 'react-icons/fa';
 import API_BASE_URL from '../../src/config';
-
+import LoadingSkeleton from '../components/LoadingSkeleton';
 interface Listing {
   l_id: string | number;
   title: string;
@@ -80,7 +80,7 @@ const Listings: React.FC = () => {
     }));
   };
 
-  if (loading) return <p className="text-center">Loading listings...</p>;
+  if (loading) return <LoadingSkeleton />;
   if (error) return <p className="text-center text-red-500">{error}</p>;
 
   const handleLike = async (id: string | number, e: React.MouseEvent) => {
