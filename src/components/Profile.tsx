@@ -22,7 +22,7 @@ const Profile: React.FC = () => {
     // Fetch user stats
     const fetchStats = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/api/users/stats`, {
+        const response = await fetch(`http://127.0.0.1:8000/api/users/stats`, {
           headers: {
             'Authorization': `Bearer ${await currentUser?.getIdToken()}`
           }

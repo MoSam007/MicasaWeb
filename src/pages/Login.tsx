@@ -1,16 +1,20 @@
 import React, { useState } from 'react';
 import { useAuth } from '../auth/authContext';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { FaGoogle, FaFacebook, FaEnvelope, FaLock } from 'react-icons/fa';
 
 const Login: React.FC = () => {
-  const { login, loginWithProvider, currentUser } = useAuth();
+  const { login, loginWithProvider } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState<'hunter' | 'owner' | 'mover'>('hunter');
+  const [role, setRole] = useState<'hunter' | 'owner' | 'mover' | 'admin'>('hunter');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Get the redirect path from location state or default to homepage
+  const from = location.state?.from?.pathname || '/';
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -18,6 +22,7 @@ const Login: React.FC = () => {
       setError('');
       setLoading(true);
       await login(email, password, role);
+      
       // Redirect based on role
       switch (role) {
         case 'hunter':
@@ -29,11 +34,14 @@ const Login: React.FC = () => {
         case 'mover':
           navigate('/moving-services');
           break;
+        case 'admin':
+          navigate('/admin/dashboard');
+          break;
         default:
-          navigate('/');
+          navigate(from);
       }
-    } catch (error) {
-      setError('Failed to sign in');
+    } catch (error: any) {
+      setError(error.message || 'Failed to sign in');
       console.error(error);
     } finally {
       setLoading(false);
@@ -45,7 +53,8 @@ const Login: React.FC = () => {
       setError('');
       setLoading(true);
       await loginWithProvider(provider, role);
-      // Redirect based on role after social login
+      
+      // Redirect based on role
       switch (role) {
         case 'hunter':
           navigate('/listings');
@@ -56,21 +65,19 @@ const Login: React.FC = () => {
         case 'mover':
           navigate('/moving-services');
           break;
+        case 'admin':
+          navigate('/admin/dashboard');
+          break;
         default:
-          navigate('/');
+          navigate(from);
       }
-    } catch (error) {
-      setError(`Failed to sign in with ${provider}`);
+    } catch (error: any) {
+      setError(error.message || `Failed to sign in with ${provider}`);
       console.error(error);
     } finally {
       setLoading(false);
     }
   };
-
-  // if (currentUser) {
-  //   navigate('/');
-  //   return null;
-  // }
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
@@ -101,12 +108,13 @@ const Login: React.FC = () => {
               </label>
               <select
                 value={role}
-                onChange={(e) => setRole(e.target.value as 'hunter' | 'owner' | 'mover')}
+                onChange={(e) => setRole(e.target.value as 'hunter' | 'owner' | 'mover' | 'admin')}
                 className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 sm:text-sm rounded-md"
               >
                 <option value="hunter">House Hunter</option>
                 <option value="owner">Home Owner</option>
                 <option value="mover">Moving Service Provider</option>
+                <option value="admin">Administrator</option>
               </select>
             </div>
 
@@ -147,25 +155,6 @@ const Login: React.FC = () => {
                   className="block w-full pl-10 sm:text-sm border-gray-300 rounded-md focus:ring-yellow-500 focus:border-yellow-500"
                   placeholder="••••••••"
                 />
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <input
-                  id="remember-me"
-                  type="checkbox"
-                  className="h-4 w-4 text-yellow-600 focus:ring-yellow-500 border-gray-300 rounded"
-                />
-                <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
-                  Remember me
-                </label>
-              </div>
-
-              <div className="text-sm">
-                <a href="#" className="font-medium text-yellow-600 hover:text-yellow-500">
-                  Forgot your password?
-                </a>
               </div>
             </div>
 

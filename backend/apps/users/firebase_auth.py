@@ -16,11 +16,28 @@ def verify_firebase_token(id_token):
         decoded_token = auth.verify_id_token(id_token)
         uid = decoded_token.get("uid")
         email = decoded_token.get("email")
-        role = decoded_token.get("role", "hunter")  # Default role
+        
+        # Get role from token claims, or use the provided role from frontend
+        role = decoded_token.get("role", "hunter")  # Default to hunter
 
-        user, _ = UserProfile.objects.get_or_create(uid=uid, defaults={"email": email, "role": role})
+        # Get or create user with appropriate role
+        user, created = UserProfile.objects.get_or_create(
+            uid=uid, 
+            defaults={
+                "email": email, 
+                "role": role,
+                "username": email.split('@')[0]  # Default username from email
+            }
+        )
+        
+        # Update role if user exists but role has changed
+        if not created and user.role != role:
+            user.role = role
+            user.save()
+            
         return user
-    except Exception:
+    except Exception as e:
+        print(f"Firebase token verification error: {e}")
         return None
 
 def firebase_auth_required(view_func):
