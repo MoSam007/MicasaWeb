@@ -57,21 +57,6 @@ def update_user(request, uid):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['PATCH'])
-def update_user_role(request, uid):
-    """Update a user's role (Admin only)"""
-    if not request.user or not request.user.is_admin:
-        return Response({'error': 'Permission denied'}, status=status.HTTP_403_FORBIDDEN)
-
-    user = get_object_or_404(UserProfile, uid=uid)
-    new_role = request.data.get('role', None)
-    if new_role not in ['hunter', 'owner', 'mover', 'admin']:
-        return Response({'error': 'Invalid role'}, status=status.HTTP_400_BAD_REQUEST)
-
-    user.role = new_role
-    user.save()
-    return Response({'message': 'User role updated successfully'}, status=status.HTTP_200_OK)
-
-@api_view(['PATCH'])
 def toggle_user_status(request, uid):
     """Activate or deactivate a user account (Admin only)"""
     if not request.user or not request.user.is_admin:
@@ -81,16 +66,3 @@ def toggle_user_status(request, uid):
     user.is_active = not user.is_active
     user.save()
     return Response({'message': 'User status updated successfully'}, status=status.HTTP_200_OK)
-
-# @csrf_exempt
-# def get_user_info(request):
-#     """Retrieve authenticated user info"""
-#     if not request.user:
-#         return JsonResponse({"message": "Unauthorized"}, status=401)
-    
-#     return JsonResponse({
-#         "uid": request.user.uid,
-#         "email": request.user.email,
-#         "name": request.user.username,
-#         "role": request.user.role,
-#     })

@@ -29,6 +29,10 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   if (requireAuth && !currentUser) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
+// If authentication is NOT required and user IS logged in (login/register pages)
+  if (!requireAuth && currentUser) {
+    return <Navigate to="/listings" />;
+  }
 
   // Case 2: Route has role restrictions and user doesn't have the required role
   if (requireAuth && allowedRoles.length > 0 && userRole && !allowedRoles.includes(userRole)) {

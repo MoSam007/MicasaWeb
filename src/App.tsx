@@ -6,20 +6,20 @@ import ProtectedRoute from './components/protectedRoutes';
 import Footer from './components/Footer';
 
 // Pages
-import Home from './pages/Listings'; // create this page
+import Home from './pages/Listings';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Listings from './pages/Listings';
 import ListingDetails from './pages/ListingDetail';
 import Wishlist from './pages/Wishlist';
-import OwnerDashboard from './pages/AdminListingManager'; // create this page
+import OwnerDashboard from './pages/AdminListingManager';
 import AddListing from './pages/AddListingForm';
-import ManageListings from './pages/AdminListingDetail'; // create this page
+import ManageListings from './pages/AdminListingDetail';
 import MoverDashboard from './pages/MoverHome';
-import MovingServices from './pages/MoverHome'; // create this page
+import MovingServices from './pages/MoverHome';
 import AdminDashboard from './pages/AdminListingManager';
-import UserManagement from './pages/AddListingForm'; // create this page
-import NotFound from './pages/FAQ'; // create this page
+import UserManagement from './pages/AddListingForm';
+import NotFound from './pages/FAQ';
 
 import './App.css';
 
@@ -142,9 +142,9 @@ function App() {
               <Route path="*" element={<NotFound />} />
             </Routes>
           </main>
+          <Footer />
         </div>
       </Router>
-      <Footer /> 
     </AuthProvider>
   );
 }
