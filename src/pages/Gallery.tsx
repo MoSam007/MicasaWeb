@@ -5,6 +5,8 @@ interface IListing {
   imageUrls: string[];
 }
 
+// add feature to click on an image in the gallery to view it
+
 const Gallery: React.FC = () => {
   const { l_id } = useParams<{ l_id: string }>();
   const [listing, setListing] = useState<IListing | null>(null);
