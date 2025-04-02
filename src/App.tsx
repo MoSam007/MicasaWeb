@@ -60,7 +60,7 @@ function App() {
                 } 
               />
               <Route 
-                path="/listing/:id" 
+                path="/listing/:l_id" 
                 element={
                   <ProtectedRoute allowedRoles={['hunter', 'owner', 'mover', 'admin']}>
                     <ListingDetails />

@@ -223,8 +223,8 @@ const ListingDetail: React.FC = () => {
   };
 
   return (
-    <div className="container mx-auto px-6 py-8">
-      {/* Photo Gallery Section */}
+    <div className="container mx-auto px-6 py-8"> 
+      {/* Photo Gallery Section */} {/* Add on hover feature to make images pop when hovered */}
       <div className="grid grid-cols-2 gap-4 mb-8">
         {listing.image_urls && listing.image_urls.length > 0 ? (
           <img

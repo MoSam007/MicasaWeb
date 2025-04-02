@@ -13,12 +13,12 @@ def toggle_wishlist(request):
     if request.method == "POST":
         try:
             data = json.loads(request.body)
-            listing_id = data.get("listing_id")
+            l_id = data.get("l_id")
             
-            if not listing_id:
+            if not l_id:
                 return JsonResponse({"error": "Listing ID is required."}, status=400)
 
-            listing = get_object_or_404(Listing, id=listing_id)
+            listing = get_object_or_404(Listing, id=l_id)
             wishlist_item, created = Wishlist.objects.get_or_create(user=request.user, listing=listing)
 
             if not created:
@@ -38,7 +38,7 @@ def get_wishlist(request):
     wishlist_items = Wishlist.objects.filter(user=request.user).select_related("listing")
     listings = [
         {
-            "id": item.listing.id,
+            "l_id": item.listing.l_id,
             "title": item.listing.title,
             "price": item.listing.price,
             "image": item.listing.image.url if item.listing.image else None,
