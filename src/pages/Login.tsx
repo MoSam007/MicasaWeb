@@ -21,7 +21,7 @@ const Login: React.FC = () => {
     try {
       setError('');
       setLoading(true);
-      await login(email, password, role);
+      login(email, password, role); // edited out role param
       
       // Redirect based on role
       switch (role) {

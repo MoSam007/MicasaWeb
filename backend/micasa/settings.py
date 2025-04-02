@@ -21,6 +21,8 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static')
 ]
 
+APPEND_SLASH = False
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',

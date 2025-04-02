@@ -3,6 +3,7 @@ from firebase_admin import auth, credentials
 from django.conf import settings
 from django.http import JsonResponse
 from django.utils.functional import SimpleLazyObject
+from django.contrib.auth.middleware import get_user
 from .models import UserProfile
 
 # Initialize Firebase Admin SDK if not already initialized
@@ -26,7 +27,8 @@ def verify_firebase_token(id_token):
             defaults={
                 "email": email, 
                 "role": role,
-                "username": email.split('@')[0]  # Default username from email
+                "username": email.split('@')[0],  # Default username from email
+                 "is_active": True
             }
         )
         
@@ -58,6 +60,11 @@ def firebase_auth_middleware(get_response):
     Middleware to authenticate requests using Firebase ID tokens.
     """
     def middleware(request):
+                # Bypass Firebase authentication for Django Admin
+        if request.path.startswith("/admin/"):
+            request.user = get_user(request)
+            return get_response(request)
+        
         id_token = request.headers.get("Authorization")
         if id_token and id_token.startswith("Bearer "):
             id_token = id_token.split("Bearer ")[1]

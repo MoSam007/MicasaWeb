@@ -91,7 +91,7 @@ const ListingDetail: React.FC = () => {
       }
 
       try {
-        const response = await fetch(`${API_BASE_URL}/listings/${l_id}`);
+        const response = await fetch(`${API_BASE_URL}/listings/${l_id}/`);
         if (!response.ok) {
           throw new Error('Error fetching listing');
         }

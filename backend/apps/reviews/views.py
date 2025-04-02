@@ -4,6 +4,7 @@ from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAdminUser
+from rest_framework import status
 from .models import Review
 from .serializers import ReviewSerializer
 
@@ -26,12 +27,15 @@ class ReviewByListingView(APIView):
 class AddReviewView(APIView):
     def post(self, request, l_id):
         data = request.data
-        data["l_id"] = l_id
+        data["l_id"] = l_id  # Ensure listing ID is included
+
         serializer = ReviewSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
-            return Response({"message": "Review added successfully", "data": serializer.data}, status=201)
-        return Response(serializer.errors, status=400)
+            return Response({"message": "Review added successfully", "review": serializer.data}, status=status.HTTP_201_CREATED)
+
+        print(serializer.errors)  # Log errors for debugging
+        return Response({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 class DeleteReviewView(APIView):
     permission_classes = [IsAdminUser]  # Only admins can delete reviews

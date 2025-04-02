@@ -50,6 +50,10 @@ MIDDLEWARE = [
     "apps.users.firebase_auth.firebase_auth_middleware",
 ]
 
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+]
+
 ROOT_URLCONF = 'micasa.urls'
 
 TEMPLATES = [
@@ -73,6 +77,8 @@ WSGI_APPLICATION = 'micasa.wsgi.application'
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",  # React frontend
 ]
+
+APPEND_SLASH = False
 
 # Database Configuration for MySQL
 DATABASES = {

@@ -34,7 +34,7 @@ const ReviewsSection: React.FC<ReviewsSectionProps> = ({ l_id }) => {
       try {
         setLoading(true);
         const response = await axios.get<{ reviews: Review[]; averageRating: number }>(
-          `http://localhost:5000/api/reviews/${l_id}`
+          `http://127.0.0.1:8000/api/reviews/${l_id}/`
         );
         setReviews(response.data.reviews);
         setAverageRating(response.data.averageRating);
@@ -57,14 +57,14 @@ const ReviewsSection: React.FC<ReviewsSectionProps> = ({ l_id }) => {
 
         // Prepare review data (userImage is handled by the backend)
         const reviewData = {
-          userEmail: newReview.email,
+          user: newReview.email,
           rating: newReview.rating,
           comment: newReview.comment,
         };
 
         // Send the POST request to the backend
         const response = await axios.post(
-          `http://localhost:5000/api/reviews/${l_id}`,
+          `http://127.0.0.1:8000/api/reviews/${l_id}/add/`,
           reviewData,
           {
             headers: { "Content-Type": "application/json" },
