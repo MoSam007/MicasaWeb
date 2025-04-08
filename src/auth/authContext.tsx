@@ -58,6 +58,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Add the role to our user object
       (user as UserWithRole).role = role;
       
+      console.log("Role set successfully to:", role);
       return true;
     } catch (error) {
       console.error('Error setting role:', error);
@@ -120,12 +121,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (response.ok) {
         const userData = await response.json();
         const role = userData.role as UserRole;
+        
+        console.log("Fetched user role from backend:", role);
+        
         setUserRole(role);
         
         // Add the role to our user object
         (user as UserWithRole).role = role;
       } else {
-        console.error('Failed to fetch user role');
+        console.error('Failed to fetch user role:', await response.text());
         setUserRole(null);
       }
     } catch (error) {
@@ -138,6 +142,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
+      console.log("Auth state changed, user:", user?.email);
       setCurrentUser(user);
       
       if (user) {
