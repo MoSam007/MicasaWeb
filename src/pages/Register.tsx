@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
 import { useAuth } from '../auth/authContext';
 import { FaGoogle, FaFacebook } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
 
 const Register: React.FC = () => {
   const { register, loginWithProvider } = useAuth();
+  const navigate = useNavigate();
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState<'hunter' | 'owner' | 'mover'>('hunter');
@@ -13,6 +16,20 @@ const Register: React.FC = () => {
     e.preventDefault();
     try {
       await register(email, password, role);
+
+      switch (role) {
+        case 'hunter':
+          navigate('/listings');
+          break;
+        case 'owner':
+          navigate('/my-listings');
+          break;
+        case 'mover':
+          navigate('/moving-services');
+          break;
+        default:
+          navigate('/');
+      }
     } catch (error) {
       setError('Failed to register');
       console.error(error);
