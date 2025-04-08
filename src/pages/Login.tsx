@@ -21,15 +21,8 @@ const Login: React.FC = () => {
     try {
       setError('');
       setLoading(true);
-      await login(email, password, role); // edited out role param
-            // wait up to 3s for userRole to populate
-            const start = Date.now();
-            while (!role && Date.now() - start < 3000) {
-              // tiny pause
-              // @ts-ignore
-              await new Promise((r) => setTimeout(r, 100));
-            }
-            
+      await login(email, password, role);
+      
       // Redirect based on role
       switch (role) {
         case 'hunter':
