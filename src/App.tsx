@@ -49,10 +49,12 @@ function App() {
                   </ProtectedRoute>
                 } 
               />
+              
+              {/* Listing detail - combined route for all users */}
               <Route 
                 path="/listing/:l_id" 
                 element={
-                  <ProtectedRoute allowedRoles={['hunter', 'owner', 'mover', 'admin']} requireAuth={false}>
+                  <ProtectedRoute allowedRoles={['hunter', 'owner', 'mover', 'admin']} requireAuth={true}>
                     <ListingDetails />
                   </ProtectedRoute>
                 } 
@@ -64,14 +66,6 @@ function App() {
                 element={
                   <ProtectedRoute allowedRoles={['hunter', 'admin']}>
                     <Listings />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/listing/:l_id" 
-                element={
-                  <ProtectedRoute allowedRoles={['hunter', 'owner', 'mover', 'admin']} requireAuth={false}>
-                    <ListingDetails />
                   </ProtectedRoute>
                 } 
               />
