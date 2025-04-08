@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { FaHeart, FaAngleLeft, FaAngleRight } from 'react-icons/fa';
 import API_BASE_URL from '../../src/config';
 import LoadingSkeleton from '../components/LoadingSkeleton';
+import { useAuth } from '../auth/authContext';
 interface Listing {
   l_id: string | number;
   title: string;
@@ -19,12 +20,14 @@ const backendUrl = "http://127.0.0.1:8000";
 
 const Listings: React.FC = () => {
   const navigate = useNavigate();
+  const { currentUser } = useAuth();
   const [listings, setListings] = useState<Listing[]>([]);
   const [watchlist, setWatchlist] = useState<number[]>([]);
   const [imageIndexes, setImageIndexes] = useState<Record<string | number, number>>({});
-  const [loggedIn, setLoggedIn] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const loggedIn = !!currentUser;
 
   useEffect(() => {
     const fetchListings = async () => {
@@ -58,6 +61,25 @@ const Listings: React.FC = () => {
     navigate(`/listing/${id}`);
   };
 
+  useEffect(() => {
+    const fetchWatchlist = async () => {
+      if (!loggedIn || !currentUser) return;
+      try {
+        const idToken = await currentUser.getIdToken();
+        const response = await fetch(`${backendUrl}/api/wishlist/`, {
+          headers: { Authorization: `Bearer ${idToken}` },
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setWatchlist(data.map((item: { l_id: number }) => item.l_id));
+        }
+      } catch (err) {
+        console.error('Error fetching watchlist:', err);
+      }
+    };
+    fetchWatchlist();
+  }, [loggedIn, currentUser]);
+
   const handleNextImage = (id: number | string, e: React.MouseEvent) => {
     e.stopPropagation();
     const listing = listings.find((listing) => listing.l_id === id);
@@ -83,16 +105,22 @@ const Listings: React.FC = () => {
   if (loading) return <LoadingSkeleton />;
   if (error) return <p className="text-center text-red-500">{error}</p>;
 
+
   const handleLike = async (id: string | number, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!loggedIn) {
+    if (!loggedIn || !currentUser) {
       alert('Please log in to like a listing.');
+      navigate('/login');
       return;
     }
+
     try {
+      const idToken = await currentUser.getIdToken();
       const response = await fetch(`${backendUrl}/api/listings/${id}/like`, {
         method: 'POST',
+        headers: { Authorization: `Bearer ${idToken}` },
       });
+
       if (response.ok) {
         setListings((prevListings) =>
           prevListings.map((listing) =>
@@ -100,8 +128,8 @@ const Listings: React.FC = () => {
           )
         );
       }
-    } catch (error) {
-      console.error('Error liking listing:', error);
+    } catch (err) {
+      console.error('Error liking listing:', err);
     }
   };
 
@@ -205,6 +233,6 @@ const Listings: React.FC = () => {
       </div>
     </div>
   );
-};
+ };
 
 export default Listings;

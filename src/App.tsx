@@ -49,6 +49,14 @@ function App() {
                   </ProtectedRoute>
                 } 
               />
+              <Route 
+                path="/listing/:l_id" 
+                element={
+                  <ProtectedRoute allowedRoles={['hunter', 'owner', 'mover', 'admin']} requireAuth={false}>
+                    <ListingDetails />
+                  </ProtectedRoute>
+                } 
+              />
               
               {/* House Hunter Routes */}
               <Route 
@@ -62,7 +70,7 @@ function App() {
               <Route 
                 path="/listing/:l_id" 
                 element={
-                  <ProtectedRoute allowedRoles={['hunter', 'owner', 'mover', 'admin']}>
+                  <ProtectedRoute allowedRoles={['hunter', 'owner', 'mover', 'admin']} requireAuth={false}>
                     <ListingDetails />
                   </ProtectedRoute>
                 } 

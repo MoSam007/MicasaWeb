@@ -54,6 +54,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       // Update local state
       setUserRole(role);
+      
+      // Add the role to our user object
+      (user as UserWithRole).role = role;
+      
       return true;
     } catch (error) {
       console.error('Error setting role:', error);
@@ -64,7 +68,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   async function register(email: string, password: string, role: UserRole) {
     try {
       const result = await createUserWithEmailAndPassword(auth, email, password);
-      // Set the role for the new user
+      // Set the role for the new user and wait for it to complete
       await setRoleForUser(result.user, role);
       return result;
     } catch (error) {
@@ -76,7 +80,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   async function login(email: string, password: string, role: UserRole) {
     try {
       const result = await signInWithEmailAndPassword(auth, email, password);
-      // Update the user's role on login (in case it changed)
+      // Update the user's role on login and wait for it to complete
       await setRoleForUser(result.user, role);
       return result;
     } catch (error) {
@@ -89,7 +93,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const provider = providerName === 'google' ? googleProvider : facebookProvider;
     try {
       const result = await signInWithPopup(auth, provider);
-      // Set the role after social login
+      // Set the role after social login and wait for it to complete
       await setRoleForUser(result.user, role);
       return result;
     } catch (error) {
@@ -115,7 +119,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       if (response.ok) {
         const userData = await response.json();
-        setUserRole(userData.role as UserRole);
+        const role = userData.role as UserRole;
+        setUserRole(role);
+        
+        // Add the role to our user object
+        (user as UserWithRole).role = role;
       } else {
         console.error('Failed to fetch user role');
         setUserRole(null);
