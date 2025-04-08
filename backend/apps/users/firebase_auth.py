@@ -31,13 +31,13 @@ def verify_firebase_token(id_token):
         #          "is_active": True
         #     }
         # )
-        
+
         # Create user on first login (default role = hunter), otherwise just fetch
         user, created = UserProfile.objects.get_or_create(
             uid=uid,
             defaults={
                 "email": email,
-                "role": "hunter",
+                "role": role,
                 "username": email.split('@')[0],
                 "is_active": True
             }
