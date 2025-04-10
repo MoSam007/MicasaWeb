@@ -36,6 +36,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
   // Case 2: Route has role restrictions and user doesn't have the required role
   if (requireAuth && allowedRoles.length > 0 && userRole && !allowedRoles.includes(userRole)) {
+    console.log("User has role", userRole, "but needs one of", allowedRoles);
     // Redirect to appropriate dashboard based on their actual role
     switch(userRole) {
       case 'hunter':
