@@ -54,7 +54,7 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
 ]
 
-ROOT_URLCONF = 'micasa.urls'
+ROOT_URLCONF = 'backend.urls'
 
 TEMPLATES = [
     {

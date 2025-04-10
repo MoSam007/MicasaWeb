@@ -8,5 +8,6 @@ urlpatterns = [
     path("api/listings/", include("apps.listings.urls")),  # Fixed
     path("api/reviews/", include("apps.reviews.urls")), 
     path("api/wishlist/", include("apps.wishlist.urls")),  
-    path("api/users/", include("apps.users.urls")), 
+    path("api/users/", include("apps.users.urls")),
+    path("api/user/", include("apps.users.urls")), 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

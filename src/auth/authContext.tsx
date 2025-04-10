@@ -36,7 +36,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const idToken = await user.getIdToken();
       
       // Send role to your backend to store it
-      const response = await fetch('http://127.0.0.1:8000/api/user/role/', {
+      const response = await fetch('http://127.0.0.1:8000/api/users/role/', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -112,7 +112,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const fetchUserRole = async (user: User) => {
     try {
       const idToken = await user.getIdToken();
-      const response = await fetch('http://127.0.0.1:8000/api/user/info/', {
+      const response = await fetch('http://127.0.0.1:8000/api/users/info/', {
         headers: {
           'Authorization': `Bearer ${idToken}`
         }
