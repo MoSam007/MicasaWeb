@@ -8,6 +8,8 @@ import AdminNavigation from './AdminNavigation';
 
 const NavigationRouter: React.FC = () => {
   const { currentUser, userRole } = useAuth();
+  
+  console.log("NavigationRouter - currentUser:", currentUser?.email, "userRole:", userRole);
 
   // Not logged in or no role information
   if (!currentUser || !userRole) {
