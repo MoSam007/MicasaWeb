@@ -34,21 +34,21 @@ def update_user_role(request):
         user.save()
         
         # Update role in Firebase
-        # try:
-        #     from firebase_admin import auth
-        #     auth.set_custom_user_claims(user.uid, {'role': new_role})
-        # except Exception as e:
-        #     return Response({'error': f'Firebase update failed: {e}'}, status=400)
-            
-        # return Response({'success': True, 'role': new_role})
-   
-    # Try to mirror in Firebase custom claims, but don’t fail if it errors
         try:
             from firebase_admin import auth
             auth.set_custom_user_claims(user.uid, {'role': new_role})
-        except Exception:
-            pass
+        except Exception as e:
+            return Response({'error': f'Firebase update failed: {e}'}, status=400)
+            
         return Response({'success': True, 'role': new_role})
+   
+    # Try to mirror in Firebase custom claims, but don’t fail if it errors
+        # try:
+        #     from firebase_admin import auth
+        #     auth.set_custom_user_claims(user.uid, {'role': new_role})
+        # except Exception:
+        #     pass
+        # return Response({'success': True, 'role': new_role})
     return Response({'error': 'Invalid role'}, status=400)
 
 @api_view(['PATCH'])

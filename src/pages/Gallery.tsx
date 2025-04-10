@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import API_BASE_URL from '../../src/config';
 interface IListing {
-  imageUrls: string[];
+  image_urls: string[];
 }
 
 // add feature to click on an image in the gallery to view it
@@ -35,10 +35,10 @@ const Gallery: React.FC = () => {
       </Link>
       <h1 className="text-2xl font-semibold mb-6">All Photos</h1>
       <div className="grid grid-cols-3 gap-4">
-        {listing.imageUrls.map((url, index) => (
+        {listing.image_urls.map((url, index) => (
           <img
             key={index}
-            src={`${backendUrl}/uploads/${url}`}
+            src={url.startsWith('http') ? url : `${backendUrl}/uploads/${url}`}
             alt={`Gallery ${index + 1}`}
             className="w-full h-64 object-cover rounded-lg"
           />

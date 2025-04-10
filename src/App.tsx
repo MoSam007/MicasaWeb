@@ -19,6 +19,8 @@ import MoverDashboard from './pages/MoverHome';
 import MovingServices from './pages/MoverHome';
 import AdminDashboard from './pages/AdminListingManager';
 import UserManagement from './pages/AddListingForm';
+import Gallery from './pages/Gallery';
+import About from './pages/About';
 import NotFound from './pages/FAQ';
 
 import './App.css';
@@ -49,6 +51,7 @@ function App() {
                   </ProtectedRoute>
                 } 
               />
+              <Route path="/about" element={<About />} />
               
               {/* Listing detail - combined route for all users */}
               <Route 
@@ -66,6 +69,14 @@ function App() {
                 element={
                   <ProtectedRoute allowedRoles={['hunter', 'admin']}>
                     <Listings />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/listing/:l_id/gallery"
+                element={
+                  <ProtectedRoute requireAuth={true}>
+                    <Gallery />
                   </ProtectedRoute>
                 } 
               />
