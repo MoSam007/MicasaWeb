@@ -46,6 +46,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
       
       if (!response.ok) {
+        console.error('Failed to update role:', await response.text());
         throw new Error('Failed to update role');
       }
 

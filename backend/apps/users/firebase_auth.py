@@ -19,26 +19,14 @@ def verify_firebase_token(id_token):
         email = decoded_token.get("email")
         
         # Get role from token claims, or use the provided role from frontend
-        role = decoded_token.get("role", "hunter")  # Default to hunter
+        role = decoded_token.get("role")  
 
-        # # Get or create user with appropriate role
-        # user, created = UserProfile.objects.get_or_create(
-        #     uid=uid, 
-        #     defaults={
-        #         "email": email, 
-        #         "role": role,
-        #         "username": email.split('@')[0],  # Default username from email
-        #          "is_active": True
-        #     }
-        # )
-
-        # Create user on first login (default role = hunter), otherwise just fetch
         user, created = UserProfile.objects.get_or_create(
             uid=uid,
             defaults={
                 "email": email,
                 "role": role,
-                "username": email.split('@')[0],
+                "username": email.split('@')[0]  if email else uid[:8],
                 "is_active": True
             }
         )
