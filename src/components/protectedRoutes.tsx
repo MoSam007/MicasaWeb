@@ -16,6 +16,11 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   const { currentUser, userRole, loading } = useAuth();
   const location = useLocation();
 
+  console.log("ProtectedRoute - Current user:", currentUser?.email);
+  console.log("ProtectedRoute - User role:", userRole);
+  console.log("ProtectedRoute - Allowed roles:", allowedRoles);
+  console.log("ProtectedRoute - Require auth:", requireAuth);
+  
   // If still loading auth state, show a loading indicator
   if (loading) {
     return (

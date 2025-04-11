@@ -14,25 +14,40 @@ if not firebase_admin._apps:
 def verify_firebase_token(id_token):
     """Verifies Firebase ID token and returns user."""
     try:
+        print(f"Verifying Firebase token: {id_token[:10]}...")
         decoded_token = auth.verify_id_token(id_token)
         uid = decoded_token.get("uid")
         email = decoded_token.get("email")
         
-        # Get role from token claims, or use the provided role from frontend
-        role = decoded_token.get("role")  
+        # Get role from custom claims
+        role = decoded_token.get("role")
+        
+        print(f"Token decoded - UID: {uid}, Email: {email}, Role from claims: {role}")
+        
+        # If no role in claims, default to 'hunter'
+        if not role:
+            role = "hunter"  # Default role
+            print(f"No role in claims, defaulting to: {role}")
 
+        print(f"Looking up user with UID: {uid}")
         user, created = UserProfile.objects.get_or_create(
             uid=uid,
             defaults={
                 "email": email,
                 "role": role,
-                "username": email.split('@')[0]  if email else uid[:8],
+                "username": email.split('@')[0] if email else uid[:8],
                 "is_active": True
             }
         )
 
+        if created:
+            print(f"Created new user: {email} with role: {role}")
+        else:
+            print(f"Found existing user: {email} with role: {user.role}")
+            
         # Update role if user exists but role has changed
-        if not created and user.role != role:
+        if not created and role and user.role != role:
+            print(f"Updating role for {email} from {user.role} to {role}")
             user.role = role
             user.save()
             

@@ -15,8 +15,12 @@ const Register: React.FC = () => {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      console.log(`Registering with role: ${role}`);
       await register(email, password, role);
 
+      console.log(`Registration successful, redirecting based on role: ${role}`);
+    
+    // Navigate based on role
       switch (role) {
         case 'hunter':
           navigate('/listings');
@@ -30,9 +34,9 @@ const Register: React.FC = () => {
         default:
           navigate('/');
       }
-    } catch (error) {
-      setError('Failed to register');
-      console.error(error);
+    } catch (error: any) {
+    setError(error.message || 'Failed to register');
+    console.error('Registration error:', error);
     }
   };
 
@@ -60,9 +64,9 @@ const Register: React.FC = () => {
                 onChange={(e) => setRole(e.target.value as 'hunter' | 'owner' | 'mover')}
                 className="mt-1 block w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-yellow-500 focus:border-yellow-500"
               >
-                <option value="hunter">Find a home (House Hunter)</option>
-                <option value="owner">List my property (Home Owner)</option>
-                <option value="mover">Offer moving services (Mover)</option>
+                <option value="hunter">Find a dream home </option>
+                <option value="owner">List my property </option>
+                <option value="mover">Offer moving services </option>
               </select>
             </div>
             <input

@@ -27,6 +27,7 @@ const NavigationRouter: React.FC = () => {
     case 'admin':
       return <AdminNavigation />; // You'll need to create this component
     default:
+      console.log("NavigationRouter - Falling back to DefaultNavigation (unknown role)");
       return <DefaultNavigation />;
   }
 };

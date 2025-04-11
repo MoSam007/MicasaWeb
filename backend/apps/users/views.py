@@ -1,3 +1,4 @@
+from firebase_admin import auth as firebase_auth
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
@@ -23,27 +24,91 @@ def get_user_info(request):
     return Response(serializer.data)
 
 @api_view(['PUT'])
-@firebase_auth_required
 def update_user_role(request):
     """Update user role"""
-    user = request.user
-    new_role = request.data.get('role')
-    
-    if new_role and new_role in ['hunter', 'owner', 'mover', 'admin']:
-        user.role = new_role
-        user.save()
+    id_token = request.headers.get("Authorization")
+    if id_token and id_token.startswith("Bearer "):
+        id_token = id_token.split("Bearer ")[1]
         
-        # Update role in Firebase
         try:
-            from firebase_admin import auth
-            auth.set_custom_user_claims(user.uid, {'role': new_role})
-        except Exception as e:
-            # Log the error but still return success for the Django user update
-            print(f"Firebase update failed: {e}")
+            # Verify token directly without requiring existing user
+            decoded_token = firebase_auth.verify_id_token(id_token)
+            uid = decoded_token.get("uid")
+            email = decoded_token.get("email", "")
+            new_role = request.data.get('role')
             
-        return Response({'success': True, 'role': new_role})
+            if not new_role or new_role not in ['hunter', 'owner', 'mover', 'admin']:
+                return Response({'error': 'Invalid role'}, status=400)
+                
+            # Get or create user
+            user, created = UserProfile.objects.update_or_create(
+                uid=uid,
+                defaults={
+                    "email": email,
+                    "role": new_role,
+                    "username": email.split('@')[0] if email else uid[:8],
+                    "is_active": True
+                }
+            )
+            
+            # Update Firebase custom claims
+            try:
+                firebase_auth.set_custom_user_claims(uid, {'role': new_role})
+                print(f"Updated Firebase role for {email} to {new_role}")
+            except Exception as e:
+                print(f"Firebase update failed: {e}")
+                
+            return Response({'success': True, 'role': new_role})
+            
+        except Exception as e:
+            print(f"Error updating role: {e}")
+            return Response({"error": str(e)}, status=400)
+            
+    return Response({"error": "Invalid token"}, status=401)
+
+@api_view(['POST'])
+def create_user(request):
+    """Create a new user with Firebase token and role"""
+    id_token = request.headers.get("Authorization")
+    if id_token and id_token.startswith("Bearer "):
+        id_token = id_token.split("Bearer ")[1]
         
-    return Response({'error': 'Invalid role'}, status=400)
+        try:
+            # Verify the token but don't require an existing user
+            decoded_token = firebase_auth.verify_id_token(id_token)
+            uid = decoded_token.get("uid")
+            email = decoded_token.get("email")
+            role = request.data.get("role", "hunter")  # Get role from request
+            
+            user, created = UserProfile.objects.get_or_create(
+                uid=uid,
+                defaults={
+                    "email": email,
+                    "role": role,
+                    "username": email.split('@')[0] if email else uid[:8],
+                    "is_active": True
+                }
+            )
+            
+            # Update role if user exists
+            if not created and user.role != role:
+                user.role = role
+                user.save()
+                
+            # Set Firebase custom claims for role
+            try:
+                firebase_auth.set_custom_user_claims(uid, {'role': role})
+                print(f"Set Firebase role for {email} to {role}")
+            except Exception as e:
+                print(f"Firebase custom claims update failed: {e}")
+                
+            serializer = UserSerializer(user)
+            return Response(serializer.data)
+            
+        except Exception as e:
+            return Response({"error": str(e)}, status=400)
+    
+    return Response({"error": "Invalid token"}, status=401)
 
 @api_view(['PATCH'])
 def update_user(request, uid):
