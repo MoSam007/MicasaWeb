@@ -249,9 +249,22 @@ const ListingDetail: React.FC = () => {
             />
           ))}
           {listing.image_urls && listing.image_urls.length > 5 && (
-            <Link to={`/listing/${l_id}/gallery`} className="col-span-2 text-center text-blue-500 mt-2">
-              View All Photos
+              <Link 
+              to={`/listing/${l_id}/gallery`} 
+              className="col-span-2 flex items-center justify-center py-3 px-6 mt-4 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-medium rounded-lg shadow-md hover:shadow-lg transform transition-all duration-300 hover:-translate-y-1 group"
+            >
+              <span>View All Photos</span>
+              <svg 
+                xmlns="http://www.w3.org/2000/svg" 
+                className="h-5 w-5 ml-2 group-hover:translate-x-1 transition-transform duration-300" 
+                fill="none" 
+                viewBox="0 0 24 24" 
+                stroke="currentColor"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              </svg>
             </Link>
+          
           )}
         </div>
       </div>
