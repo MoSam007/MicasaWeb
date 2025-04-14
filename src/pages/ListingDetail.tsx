@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import ReviewsSection from '../components/Reviews';
+import ImageGallery from '../components/ImageGallery';
+import BookingForm from '../components/BookingForm';
 import {
   FaBed, FaChair, FaBiking, FaDumbbell, FaChild,
   FaBuilding, FaSwimmer, FaFire, FaCar,
@@ -14,18 +16,9 @@ import API_BASE_URL from '../../src/config';
 
 // Skeleton Loader
 const SkeletonLoader: React.FC = () => (
-  <div className="animate-pulse px-6 p-6 sm:p-8 md:p-10">
-    {/* Image Grid Skeleton */}
-    <div className="grid grid-cols-1 sm:grid-cols-4 gap-2 mb-6">
-      {/* Main Image Skeleton */}
-      <div className="bg-gray-300 h-64 sm:h-80 md:h-96 sm:col-span-2 row-span-2 rounded-lg"></div>
-
-      {/* Thumbnail Images Skeleton */}
-      <div className="bg-gray-300 h-44 rounded-lg"></div>
-      <div className="bg-gray-300 h-44 rounded-lg"></div>
-      <div className="bg-gray-300 h-44 rounded-lg"></div>
-      <div className="bg-gray-300 h-44 rounded-lg"></div>
-    </div>
+  <div className="animate-pulse px-4 py-6">
+    {/* Image Skeleton */}
+    <div className="bg-gray-300 h-64 md:h-80 rounded-lg mb-6"></div>
 
     {/* Details Skeleton */}
     <div className="mb-4">
@@ -37,7 +30,7 @@ const SkeletonLoader: React.FC = () => (
     {/* Amenities Skeleton */}
     <div>
       <div className="bg-gray-300 h-6 w-1/4 sm:w-1/6 mb-4 rounded"></div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {[...Array(6)].map((_, index) => (
           <div key={index} className="flex items-center space-x-2">
             <div className="bg-gray-300 h-8 w-8 rounded-full"></div>
@@ -160,10 +153,20 @@ const ListingDetail: React.FC = () => {
     likes: 0,
   });
   const [showAmenitiesModal, setShowAmenitiesModal] = useState(false);
-  const [activeTab, setActiveTab] = useState('Photos');
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
   // Log the route parameter for debugging
   console.log("Route parameter l_id:", l_id);
+
+  // Handle resize events to toggle mobile/desktop view
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     const fetchListing = async () => {
@@ -271,8 +274,8 @@ const ListingDetail: React.FC = () => {
   };
   
   if (loading) return <SkeletonLoader />;
-  if (error) return <div className="text-red-600">{error}</div>;
-  if (!listing) return <div>Listing not found</div>;
+  if (error) return <div className="text-red-600 p-4">{error}</div>;
+  if (!listing) return <div className="p-4">Listing not found</div>;
 
   // Use backendUrl to construct image URLs
   const backendUrl = 'http://127.0.0.1:8000';
@@ -350,114 +353,95 @@ const ListingDetail: React.FC = () => {
   const formatAmenity = (amenity: string) => {
     const match = amenity.match(/^(\d+)\s*(.*)/);
     if (match) {
-      const [ number, name] = match;
+      const [number, name] = match.slice(1);
       return `${number} ${name.charAt(0).toUpperCase() + name.slice(1)}`;
     }
     return amenity.charAt(0).toUpperCase() + amenity.slice(1);
   };
 
-  // Navigation tabs
-  const tabs = ['Photos', 'Amenities', 'Reviews', 'Location'];
-
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8 font-sans">
-      {/* Navigation Tabs */}
-      <div className="hidden md:flex justify-center gap-10 mb-8 border-b">
-        {tabs.map(tab => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`px-4 py-3 font-medium text-base transition-colors ${
-              activeTab === tab 
-                ? 'text-black border-b-2 border-black' 
-                : 'text-gray-500 hover:text-gray-800'
-            }`}
-          >
-            {tab}
-          </button>
-        ))}
-      </div>
-
+    <div className="max-w-6xl mx-auto px-4 py-6 font-sans">
       {/* Title Section (Mobile) */}
       <div className="md:hidden mb-4">
-        <h1 className="text-2xl font-semibold">{listing.title}</h1>
-        <div className="flex justify-between items-center mt-2">
-          <p className="text-sm text-gray-600">{listing.location}</p>
-          <div className="flex items-center">
-            <span className="text-sm mr-2">⭐ {listing.rating}</span>
-            <button
-              onClick={handleLike}
-              className="flex items-center"
-            >
-              <FaHeart className={`h-5 w-5 ${
-                wishlistState.isInWishlist ? 'text-red-500' : 'text-gray-400'
-              }`} />
-            </button>
-          </div>
+        <div className="flex justify-between items-start">
+          <h1 className="text-2xl font-semibold">{listing.title}</h1>
+          <button
+            onClick={handleLike}
+            className="p-2 bg-white rounded-full shadow-md flex items-center justify-center"
+          >
+            <FaHeart className={`h-5 w-5 ${
+              wishlistState.isInWishlist ? 'text-red-500' : 'text-gray-400'
+            }`} />
+          </button>
+        </div>
+        <p className="text-sm text-gray-600 mt-1">{listing.location}</p>
+        <div className="flex items-center mt-1">
+          <span className="text-sm mr-2">⭐ {listing.rating}</span>
+          <span className="text-sm">
+            {wishlistState.likes} {wishlistState.likes === 1 ? 'save' : 'saves'}
+          </span>
         </div>
       </div>
 
-      {/* Photo Grid Section */}
-      <div className="relative grid grid-cols-1 md:grid-cols-4 gap-2 mb-8 rounded-xl overflow-hidden">
-        {listing.image_urls && listing.image_urls.length > 0 ? (
-          <>
-            {/* Main large image */}
-            <div className="md:col-span-2 md:row-span-2">
-              <img
-                src={listing.image_urls[0].startsWith('http') 
-                    ? listing.image_urls[0] 
-                    : `${backendUrl}/uploads/${listing.image_urls[0]}`}
-                alt={listing.title}
-                className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
-              />
-            </div>
-            
-            {/* Grid of smaller images */}
-            {listing.image_urls.slice(1, 5).map((url, index) => (
-              <div key={index} className="relative overflow-hidden">
+      {/* Image Gallery */}
+      {isMobile ? (
+        <div className="mb-6">
+          <ImageGallery 
+            images={listing.image_urls} 
+            listingId={l_id || ''} 
+            backendUrl={backendUrl} 
+          />
+        </div>
+      ) : (
+        <div className="relative grid grid-cols-4 gap-2 mb-8 rounded-xl overflow-hidden h-96">
+          {listing.image_urls && listing.image_urls.length > 0 ? (
+            <>
+              {/* Main large image */}
+              <div className="col-span-2 row-span-2">
                 <img
-                  src={url.startsWith('http') ? url : `${backendUrl}/uploads/${url}`}
-                  alt={`View ${index + 2}`}
+                  src={listing.image_urls[0].startsWith('http') 
+                      ? listing.image_urls[0] 
+                      : `${backendUrl}/uploads/${listing.image_urls[0]}`}
+                  alt={listing.title}
                   className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
                 />
               </div>
-            ))}
-            
-            {/* View all photos button */}
-            {listing.image_urls.length > 5 && (
-              <Link 
-                to={`/listing/${l_id}/gallery`}
-                className="absolute bottom-4 right-4 py-2 px-4 bg-white bg-opacity-80 backdrop-blur-md hover:bg-opacity-90 hover:backdrop-blur-lg transition-all duration-300 text-black font-medium rounded-lg shadow-lg flex items-center space-x-2"
-              >
-                <span>View all photos</span>
-                <FaChevronRight className="h-3 w-3" />
-              </Link>
-            )}
-          </>
-        ) : (
-          <div className="col-span-4 w-full h-96 bg-gray-200 rounded-lg flex items-center justify-center">
-            <span className="text-gray-500">No images available</span>
-          </div>
-        )}
-      </div>
-
-      {/* Content Grid - Split into two columns on larger screens */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left Column - Listing Info */}
-        <div className="lg:col-span-2">
-          {/* Title Section (Desktop) */}
-          <div className="hidden md:block mb-6">
-            <div className="flex justify-between items-start">
-              <h1 className="text-2xl font-semibold">{listing.title}</h1>
-              <button
-                onClick={handleLike}
-                className="flex items-center space-x-1 p-2 rounded-full hover:bg-gray-100 transition-colors"
-              >
-                <FaHeart className={`h-5 w-5 ${
-                  wishlistState.isInWishlist ? 'text-red-500' : 'text-gray-400'
-                }`} />
-              </button>
+              
+              {/* Grid of smaller images */}
+              {listing.image_urls.slice(1, 5).map((url, index) => (
+                <div key={index} className="relative overflow-hidden">
+                  <img
+                    src={url.startsWith('http') ? url : `${backendUrl}/uploads/${url}`}
+                    alt={`View ${index + 2}`}
+                    className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                  />
+                </div>
+              ))}
+              
+              {/* View all photos button */}
+              {listing.image_urls.length > 5 && (
+                <Link 
+                  to={`/listing/${l_id}/gallery`}
+                  className="absolute bottom-4 right-4 py-2 px-4 bg-white bg-opacity-80 backdrop-blur-md hover:bg-opacity-90 hover:backdrop-blur-lg transition-all duration-300 text-black font-medium rounded-lg shadow-lg flex items-center space-x-2"
+                >
+                  <span>View all photos</span>
+                  <FaChevronRight className="h-3 w-3" />
+                </Link>
+              )}
+            </>
+          ) : (
+            <div className="col-span-4 w-full h-full bg-gray-200 rounded-lg flex items-center justify-center">
+              <span className="text-gray-500">No images available</span>
             </div>
+          )}
+        </div>
+      )}
+
+      {/* Title Section (Desktop) */}
+      <div className="hidden md:block mb-6">
+        <div className="flex justify-between items-start">
+          <div>
+            <h1 className="text-2xl font-semibold">{listing.title}</h1>
             <p className="text-gray-600 mt-1">{listing.location}</p>
             <div className="flex items-center mt-1">
               <span className="flex items-center text-sm font-medium">
@@ -468,6 +452,29 @@ const ListingDetail: React.FC = () => {
                 {wishlistState.likes} {wishlistState.likes === 1 ? 'save' : 'saves'}
               </span>
             </div>
+          </div>
+          <button
+            onClick={handleLike}
+            className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+          >
+            <FaHeart className={`h-5 w-5 ${
+              wishlistState.isInWishlist ? 'text-red-500' : 'text-gray-400'
+            }`} />
+          </button>
+        </div>
+      </div>
+
+      {/* Content Grid - Split into two columns on larger screens */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Left Column - Listing Info */}
+        <div className="lg:col-span-2">
+          {/* Mobile Booking Form (appears before reviews on mobile) */}
+          <div className="block md:hidden mb-8">
+            <BookingForm 
+              price={listing.price} 
+              rating={listing.rating} 
+              compact={true} 
+            />
           </div>
 
           {/* Description */}
@@ -501,80 +508,12 @@ const ListingDetail: React.FC = () => {
           <ReviewsSection l_id={listing.l_id} />
         </div>
 
-        {/* Right Column - Booking/Price Info */}
-        <div className="lg:col-span-1">
-          <div className="sticky top-4 bg-white rounded-xl border shadow-lg p-6">
-            <div className="flex justify-between items-center mb-4">
-              <div>
-                <span className="text-xl font-semibold">{listing.price} KES</span>
-                <span className="text-gray-600"> / month</span>
-              </div>
-              <div className="flex items-center">
-                <span className="text-sm mr-1">⭐</span>
-                <span className="text-sm font-medium">{listing.rating}</span>
-              </div>
-            </div>
-
-            {/* Booking Form */}
-            <div className="mb-4">
-              <div className="border rounded-t-lg overflow-hidden">
-                <div className="grid grid-cols-2">
-                  <div className="p-3 border-r border-b">
-                    <div className="text-xs text-gray-500">CHECK-IN</div>
-                    <div className="text-sm font-medium mt-1">11/17/2024</div>
-                  </div>
-                  <div className="p-3 border-b">
-                    <div className="text-xs text-gray-500">CHECKOUT</div>
-                    <div className="text-sm font-medium mt-1">11/22/2024</div>
-                  </div>
-                </div>
-                <div className="p-3 relative">
-                  <div className="text-xs text-gray-500">GUESTS</div>
-                  <div className="flex justify-between items-center mt-1">
-                    <div className="text-sm font-medium">1 guest</div>
-                    <svg viewBox="0 0 24 24" className="h-5 w-5 text-gray-500">
-                      <path 
-                        fill="currentColor" 
-                        d="M12 16.5l-8.5-8.5 1.5-1.5L12 13.5 19 6.5l1.5 1.5z"
-                      ></path>
-                    </svg>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="text-center text-red-500 text-sm my-3">
-                <span>Something went wrong. Try your dates again</span>
-              </div>
-            </div>
-
-            <button 
-              className="w-full py-3 px-6 bg-gradient-to-r from-rose-500 to-pink-600 text-white font-medium rounded-lg shadow-md hover:shadow-lg transition-all duration-300"
-            >
-              Change dates
-            </button>
-
-            <div className="mt-4 text-center">
-              <span className="text-sm text-gray-500">
-                <span className="font-medium text-pink-600">Rare find! </span>
-                This place is usually booked
-              </span>
-            </div>
-
-            <div className="mt-8 text-right">
-              <button 
-                className="text-gray-600 text-sm flex items-center ml-auto"
-              >
-                <svg 
-                  viewBox="0 0 24 24" 
-                  className="h-4 w-4 mr-1 fill-current"
-                >
-                  <path d="M22.8 3.2l-2-2L3.2 18.8l2 2z"></path>
-                  <path d="M20.8 18.8l2-2L5.2 0.2l-2 2z"></path>
-                </svg>
-                Report this listing
-              </button>
-            </div>
-          </div>
+        {/* Right Column - Booking/Price Info (Desktop Only) */}
+        <div className="hidden lg:block lg:col-span-1">
+          <BookingForm 
+            price={listing.price} 
+            rating={listing.rating} 
+          />
         </div>
       </div>
 
@@ -582,7 +521,7 @@ const ListingDetail: React.FC = () => {
       <AmenitiesModal 
         isOpen={showAmenitiesModal}
         onClose={() => setShowAmenitiesModal(false)}
-        amenities={listing.amenities}
+        amenities={listing.amenities || []}
         getAmenityIcon={getAmenityIcon}
       />
     </div>
