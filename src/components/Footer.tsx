@@ -10,7 +10,7 @@ const Footer: React.FC = () => (
       <div className="w-full sm:w-1/2 md:w-1/4 mb-4 sm:mb-0 text-center sm:text-left">
         <img src={logo} alt="MiCasa Logo" className="h-16 mb-2 mx-auto sm:mx-0" />
         <h2 className="font-bold text-xl text-primary mb-2">MiCasa</h2>
-        <p>&copy; 2024 MiCasa. All rights reserved.</p>
+        <p>&copy; 2025 MiCasa. All rights reserved.</p>
         <p>
           Created by{' '}
           <a href="mailto:samato.moma@gmail.com" className="underline hover:text-primary">
@@ -49,22 +49,22 @@ const Footer: React.FC = () => (
       <div className="w-full sm:w-1/2 md:w-1/4 text-center sm:text-left">
         <h3 className="font-bold mb-2">Resources</h3>
         <p>
-          <Link to="/locations" className="underline hover:text-primary">
+          <Link to="/locations" className=" hover:text-primary">
             Locations
           </Link>
         </p>
         <p>
-          <Link to="/tips" className="underline hover:text-primary">
-            Tips
+          <Link to="/about" className=" hover:text-primary">
+            About Us
           </Link>
         </p>
         <p>
-          <Link to="/faq" className="underline hover:text-primary">
+          <Link to="/faq" className=" hover:text-primary">
             FAQs
           </Link>
         </p>
         <p>
-          <Link to="/privacy-and-terms" className="underline hover:text-primary">
+          <Link to="/privacy-and-terms" className=" hover:text-primary">
             Privacy & Terms
           </Link>
         </p>
