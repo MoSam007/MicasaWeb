@@ -53,13 +53,19 @@ def update_user_role(request):
             
             # Update Firebase custom claims
             try:
+                # CRITICAL: Set all claims in one operation - don't just add the role
                 firebase_auth.set_custom_user_claims(uid, {'role': new_role})
+                # Force token refresh in the response
                 print(f"Updated Firebase role for {email} to {new_role}")
+                return Response({
+                    'success': True, 
+                    'role': new_role,
+                    'forceRefresh': True  # Signal to the client to force refresh token
+                })
             except Exception as e:
                 print(f"Firebase update failed: {e}")
+                return Response({"error": f"Firebase claims update failed: {str(e)}"}, status=500)
                 
-            return Response({'success': True, 'role': new_role})
-            
         except Exception as e:
             print(f"Error updating role: {e}")
             return Response({"error": str(e)}, status=400)
