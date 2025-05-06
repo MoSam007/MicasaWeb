@@ -19,9 +19,18 @@ def verify_firebase_token(id_token):
         uid = decoded_token.get("uid")
         email = decoded_token.get("email")
         
-        # Get role from custom claims
-        role = decoded_token.get("role")
+        # FIXED: Get role from custom claims - claims are in the 'claims' field
+        custom_claims = decoded_token.get("claims", {})
+        role = None
         
+        # Check for role in custom claims
+        if custom_claims and isinstance(custom_claims, dict):
+            role = custom_claims.get("role")
+        
+        # If not found in claims, check if it's at the root level (some Firebase SDK versions)
+        if not role:
+            role = decoded_token.get("role")
+            
         print(f"Token decoded - UID: {uid}, Email: {email}, Role from claims: {role}")
         
         # If no role in claims, default to 'hunter'
@@ -50,7 +59,16 @@ def verify_firebase_token(id_token):
             print(f"Updating role for {email} from {user.role} to {role}")
             user.role = role
             user.save()
-            
+        
+        # If the role from claims doesn't match what's in our DB (and claims had a role),
+        # we should update the Firebase claims to match our database
+        elif not created and user.role != role and role is not None:
+            try:
+                print(f"Synchronizing Firebase claims to match DB role: {user.role}")
+                auth.set_custom_user_claims(uid, {'role': user.role})
+            except Exception as e:
+                print(f"Failed to update Firebase claims: {e}")
+                
         return user
     except Exception as e:
         print(f"Firebase token verification error: {e}")
@@ -74,7 +92,7 @@ def firebase_auth_middleware(get_response):
     Middleware to authenticate requests using Firebase ID tokens.
     """
     def middleware(request):
-                # Bypass Firebase authentication for Django Admin
+        # Bypass Firebase authentication for Django Admin
         if request.path.startswith("/admin/"):
             request.user = get_user(request)
             return get_response(request)

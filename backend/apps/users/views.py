@@ -86,6 +86,9 @@ def create_user(request):
             email = decoded_token.get("email")
             role = request.data.get("role", "hunter")  # Get role from request
             
+            if not role or role not in ['hunter', 'owner', 'mover', 'admin']:
+                return Response({'error': 'Invalid role'}, status=400)
+                
             user, created = UserProfile.objects.get_or_create(
                 uid=uid,
                 defaults={
@@ -105,16 +108,25 @@ def create_user(request):
             try:
                 firebase_auth.set_custom_user_claims(uid, {'role': role})
                 print(f"Set Firebase role for {email} to {role}")
+                
+                # Return a signal to force token refresh
+                serializer = UserSerializer(user)
+                return Response({
+                    **serializer.data,
+                    'forceRefresh': True
+                })
             except Exception as e:
                 print(f"Firebase custom claims update failed: {e}")
+                return Response({
+                    "error": f"Firebase claims update failed: {str(e)}",
+                    **UserSerializer(user).data
+                }, status=206)  # Partial Content
                 
-            serializer = UserSerializer(user)
-            return Response(serializer.data)
-            
         except Exception as e:
             return Response({"error": str(e)}, status=400)
     
     return Response({"error": "Invalid token"}, status=401)
+
 
 @api_view(['PATCH'])
 def update_user(request, uid):
