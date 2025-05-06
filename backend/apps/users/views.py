@@ -25,7 +25,10 @@ def get_user_info(request):
 
 @api_view(['PUT'])
 def update_user_role(request):
-    """Update user role"""
+    """
+    Update user role - allows users to update their own role
+    or admin to update any user's role
+    """
     id_token = request.headers.get("Authorization")
     if id_token and id_token.startswith("Bearer "):
         id_token = id_token.split("Bearer ")[1]
@@ -39,6 +42,21 @@ def update_user_role(request):
             
             if not new_role or new_role not in ['hunter', 'owner', 'mover', 'admin']:
                 return Response({'error': 'Invalid role'}, status=400)
+            
+            # Check if current user has permission to change role
+            try:
+                # Try to find the user first
+                user = UserProfile.objects.get(uid=uid)
+                
+                # Only admins should be able to change their role directly
+                if user.role != 'admin' and user.role != new_role:
+                    # For normal users, only allow role change if they don't have a role yet
+                    # or if they're updating to the same role they already have
+                    return Response({'error': 'You cannot change your role after registration'}, status=403)
+                
+            except UserProfile.DoesNotExist:
+                # New user - allow role selection during initial creation
+                pass
                 
             # Get or create user
             user, created = UserProfile.objects.update_or_create(
@@ -99,10 +117,10 @@ def create_user(request):
                 }
             )
             
-            # Update role if user exists
-            if not created and user.role != role:
-                user.role = role
-                user.save()
+            # If user already exists, don't change their role
+            # This prevents role tampering during login
+            if not created:
+                role = user.role  # Use the existing role from database
                 
             # Set Firebase custom claims for role
             try:

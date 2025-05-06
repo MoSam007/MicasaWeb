@@ -19,56 +19,71 @@ def verify_firebase_token(id_token):
         uid = decoded_token.get("uid")
         email = decoded_token.get("email")
         
-        # FIXED: Get role from custom claims - claims are in the 'claims' field
-        custom_claims = decoded_token.get("claims", {})
+        # Get role from custom claims - check multiple possible locations
         role = None
         
-        # Check for role in custom claims
-        if custom_claims and isinstance(custom_claims, dict):
-            role = custom_claims.get("role")
-        
-        # If not found in claims, check if it's at the root level (some Firebase SDK versions)
-        if not role:
+        # 1. Look for role directly in claims
+        if "role" in decoded_token:
             role = decoded_token.get("role")
+            print(f"Found role in root claims: {role}")
             
+        # 2. Check for role in the standard claims field
+        elif "claims" in decoded_token and isinstance(decoded_token["claims"], dict):
+            claims_dict = decoded_token.get("claims", {})
+            if "role" in claims_dict:
+                role = claims_dict.get("role")
+                print(f"Found role in claims dict: {role}")
+                
         print(f"Token decoded - UID: {uid}, Email: {email}, Role from claims: {role}")
         
-        # If no role in claims, default to 'hunter'
+        # Try to find existing user in database
+        try:
+            print(f"Looking up user with UID: {uid}")
+            user = UserProfile.objects.get(uid=uid)
+            
+            if user:
+                print(f"Found existing user: {email} with role: {user.role}")
+                
+                # If we have a role from claims and it differs from DB, update DB
+                if role and user.role != role:
+                    print(f"Updating user role from {user.role} to {role} (from token claims)")
+                    user.role = role
+                    user.save()
+                # If we have a role in DB but not in claims, use the DB role
+                # and don't override it with default
+                elif user.role and not role:
+                    role = user.role
+                    print(f"Using role from database: {role}")
+        except UserProfile.DoesNotExist:
+            user = None
+        
+        # If still no role, default to 'hunter'
         if not role:
             role = "hunter"  # Default role
-            print(f"No role in claims, defaulting to: {role}")
+            print(f"No role found, defaulting to: {role}")
 
-        print(f"Looking up user with UID: {uid}")
-        user, created = UserProfile.objects.get_or_create(
-            uid=uid,
-            defaults={
-                "email": email,
-                "role": role,
-                "username": email.split('@')[0] if email else uid[:8],
-                "is_active": True
-            }
-        )
-
-        if created:
+        # Create user if doesn't exist
+        if not user:
+            user = UserProfile.objects.create(
+                uid=uid,
+                email=email,
+                role=role,
+                username=email.split('@')[0] if email else uid[:8],
+                is_active=True
+            )
             print(f"Created new user: {email} with role: {role}")
-        else:
-            print(f"Found existing user: {email} with role: {user.role}")
             
-        # Update role if user exists but role has changed
-        if not created and role and user.role != role:
-            print(f"Updating role for {email} from {user.role} to {role}")
-            user.role = role
-            user.save()
-        
-        # If the role from claims doesn't match what's in our DB (and claims had a role),
-        # we should update the Firebase claims to match our database
-        elif not created and user.role != role and role is not None:
+            # Set Firebase custom claims for new users
             try:
-                print(f"Synchronizing Firebase claims to match DB role: {user.role}")
-                auth.set_custom_user_claims(uid, {'role': user.role})
+                print(f"Setting initial Firebase claims for {email} with role: {role}")
+                auth.set_custom_user_claims(uid, {'role': role})
             except Exception as e:
-                print(f"Failed to update Firebase claims: {e}")
-                
+                print(f"Failed to set initial Firebase claims: {e}")
+        
+        # Always ensure that user has the correct role property
+        # regardless of where we got it from
+        user.role = role
+        
         return user
     except Exception as e:
         print(f"Firebase token verification error: {e}")
