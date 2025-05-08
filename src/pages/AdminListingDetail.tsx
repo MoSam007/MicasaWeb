@@ -24,7 +24,7 @@ const AdminListingDetail: React.FC = () => {
   useEffect(() => {
     // Fetch the specific listing
     async function fetchListing() {
-      const response = await fetch(`${backendUrl}/api/listings/${l_id}`);
+      const response = await fetch(`${backendUrl}/listings/${l_id}`);
       if (response.ok) {
         const data = await response.json();
         setListing(data);

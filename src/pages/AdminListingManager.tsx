@@ -20,7 +20,7 @@ const AdminListingManager: React.FC = () => {
   useEffect(() => {
     // Fetch listings from the backend
     async function fetchListings() {
-      const response = await fetch(`${API_BASE_URL}/listings`);
+      const response = await fetch(`${API_BASE_URL}/listings/`);
       const data = await response.json();
       setListings(data);
     }
