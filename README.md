@@ -6,6 +6,12 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 
 In the project directory, you can run:
 
+## Install the Auth0 React SDK
+`npm install @auth0/auth0-react`
+
+## Install clerk React SDK
+`npm install @clerk/clerk-react`
+
 ### `npm start`
 
 Runs the app in the development mode.\
