@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { SignUp as ClerkSignUp, useSignUp } from '@clerk/clerk-react';
 import { useNavigate } from 'react-router-dom';
+import { SignUp, useSignUp } from '@clerk/clerk-react';
 
-const SignUp: React.FC = () => {
+const ClerkSignUp: React.FC = () => {
   const navigate = useNavigate();
   const { isLoaded, signUp, setActive } = useSignUp();
   const [role, setRole] = useState<string>('hunter');
@@ -25,7 +25,7 @@ const SignUp: React.FC = () => {
       }
       
       return await response.json();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error registering user in backend:', error);
       throw error;
     }
@@ -36,11 +36,17 @@ const SignUp: React.FC = () => {
     try {
       if (!signUp || !signUp.createdUserId) return;
       
-      // This would typically be done via webhook or backend
-      // For now, we'll mock this as the actual method would depend on your Clerk setup
-      console.log(`Would update Clerk user ${signUp.createdUserId} with role: ${role}`);
-      
-      // In a real implementation, you might use Clerk's SDK or a backend endpoint to set metadata
+      // This would be implemented in a backend endpoint that calls Clerk's API
+      await fetch('/api/clerk/updateUserMetadata', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: signUp.createdUserId,
+          metadata: { role }
+        })
+      });
     } catch (error) {
       console.error('Error updating Clerk user metadata:', error);
     }
@@ -88,9 +94,9 @@ const SignUp: React.FC = () => {
       
       // Redirect based on role
       redirectBasedOnRole(userData.role || role);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error during sign-up completion:', err);
-      setError('Failed to complete sign-up process');
+      setError(err.message || 'Failed to complete sign-up process');
     }
   };
 
@@ -102,7 +108,11 @@ const SignUp: React.FC = () => {
   }, [isLoaded, signUp?.status]);
 
   if (!isLoaded) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-600"></div>
+      </div>
+    );
   }
 
   return (
@@ -136,11 +146,11 @@ const SignUp: React.FC = () => {
         </div>
 
         {/* Clerk's SignUp component */}
-        <ClerkSignUp
+        <SignUp
           routing="path"
           path="/sign-up"
           signInUrl="/sign-in"
-          redirectUrl={`/role-selection?role=${role}`}
+          redirectUrl="/dashboard"
           appearance={{
             elements: {
               rootBox: "mx-auto w-full",
@@ -155,4 +165,4 @@ const SignUp: React.FC = () => {
   );
 };
 
-export default SignUp;
+export default ClerkSignUp;

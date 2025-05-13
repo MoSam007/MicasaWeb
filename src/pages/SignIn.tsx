@@ -1,35 +1,45 @@
 import React, { useState, useEffect } from 'react';
-import { SignIn as ClerkSignIn, useSignIn } from '@clerk/clerk-react';
 import { useNavigate } from 'react-router-dom';
-import { FaGoogle, FaFacebook } from 'react-icons/fa';
+import { SignIn, useSignIn } from '@clerk/clerk-react';
 
-const SignIn: React.FC = () => {
+const ClerkSignIn: React.FC = () => {
   const navigate = useNavigate();
   const { isLoaded, signIn, setActive } = useSignIn();
-  const [role, setRole] = useState<string>('hunter');
+  // const [role, setRole] = useState<string>('hunter');
   const [error, setError] = useState<string | null>(null);
 
-  // This function will be called after successful Clerk sign-in
-  // to update the user's role in your backend
-  const syncRoleWithBackend = async (token: string) => {
+  // Handle sign-in completion
+  const handleSignInComplete = async () => {
+    if (!signIn || signIn.status !== 'complete') return;
+    
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/users/clerk/role/', {
-        method: 'PUT',
+      // Set this session as active
+      const { createdSessionId } = signIn;
+      if (!createdSessionId) throw new Error('No session created');
+      await setActive({ session: createdSessionId });
+      
+      // Get the token for backend verification
+      const token = await fetch('/api/clerk/getToken').then(res => res.text());
+      
+      // Get user role from backend or Clerk metadata
+      const response = await fetch('http://127.0.0.1:8000/api/users/info/', {
         headers: {
-          'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ role })
+        }
       });
       
       if (!response.ok) {
-        throw new Error('Failed to update role in backend');
+        throw new Error('Failed to get user info');
       }
       
-      return await response.json();
-    } catch (error) {
-      console.error('Error syncing role with backend:', error);
-      throw error;
+      const userData = await response.json();
+      const userRole = userData.role || 'hunter';
+      
+      // Redirect based on the role
+      redirectBasedOnRole(userRole);
+    } catch (err: any) {
+      console.error('Error during sign-in completion:', err);
+      setError(err.message || 'Failed to complete sign-in process');
     }
   };
 
@@ -53,35 +63,6 @@ const SignIn: React.FC = () => {
     }
   };
 
-  // Handle sign-in completion
-  const handleSignInComplete = async () => {
-    if (!signIn?.status || signIn.status !== 'complete') return;
-    
-    try {
-      // Get the token
-      const { createdSessionId } = signIn;
-      if (!createdSessionId) throw new Error('No session created');
-      
-      // Set this session as active
-      await setActive({ session: createdSessionId });
-      
-      // Get the token for backend verification
-      const token = await fetch('/api/clerk/getToken').then(res => res.text());
-      
-      // Sync the selected role with your backend
-      const userData = await syncRoleWithBackend(token);
-      
-      // Update user metadata in Clerk with the role if needed
-      // This would typically be done via webhook or backend
-      
-      // Redirect based on the role
-      redirectBasedOnRole(userData.role || role);
-    } catch (err) {
-      console.error('Error during sign-in completion:', err);
-      setError('Failed to complete sign-in process');
-    }
-  };
-
   // Monitor sign-in status changes
   useEffect(() => {
     if (isLoaded && signIn?.status === 'complete') {
@@ -90,7 +71,11 @@ const SignIn: React.FC = () => {
   }, [isLoaded, signIn?.status]);
 
   if (!isLoaded) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-600"></div>
+      </div>
+    );
   }
 
   return (
@@ -110,11 +95,11 @@ const SignIn: React.FC = () => {
           )}
 
           {/* Clerk's SignIn component */}
-          <ClerkSignIn
+          <SignIn
             routing="path"
             path="/sign-in"
             signUpUrl="/sign-up"
-            redirectUrl={`/role-selection?role=${role}`}
+            redirectUrl="/dashboard"
             appearance={{
               elements: {
                 rootBox: "mx-auto w-full",
@@ -130,4 +115,4 @@ const SignIn: React.FC = () => {
   );
 };
 
-export default SignIn;
+export default ClerkSignIn;
