@@ -5,11 +5,9 @@ from functools import wraps
 from django.http import JsonResponse
 from django.contrib.auth import get_user_model
 from django.conf import settings
-from rest_framework.request import Request
 
 User = get_user_model()
 
-# Clerk configuration
 CLERK_API_KEY = os.environ.get('CLERK_API_KEY')
 CLERK_JWT_VERIFICATION_KEY = os.environ.get('CLERK_JWT_VERIFICATION_KEY')
 CLERK_ISSUER = os.environ.get('CLERK_ISSUER')  # Usually your Clerk frontend API URL
@@ -17,8 +15,7 @@ CLERK_ISSUER = os.environ.get('CLERK_ISSUER')  # Usually your Clerk frontend API
 def verify_clerk_token(token):
     """Verify the Clerk JWT token and extract user info."""
     try:
-        # For production, you should use the JWKS endpoint for verification
-        # Here's a simpler approach using the verification key for demonstration
+        # Using the verification key for JWT validation
         payload = jwt.decode(
             token,
             CLERK_JWT_VERIFICATION_KEY,

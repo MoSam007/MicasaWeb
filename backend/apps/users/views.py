@@ -1,171 +1,121 @@
-from firebase_admin import auth as firebase_auth
-from django.shortcuts import get_object_or_404
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.response import Response
-from rest_framework import status
-from .firebase_auth import firebase_auth_required
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
 from .models import UserProfile
 from .serializers import UserSerializer
+from .clerk_auth import clerk_auth_required, verify_clerk_token, get_user_from_clerk
 
 @api_view(['GET'])
-def get_user_profile(request, uid):
-    """Fetch a user profile by Firebase UID"""
-    user = get_object_or_404(UserProfile, uid=uid)
-    serializer = UserSerializer(user)
-    return Response(serializer.data, status=status.HTTP_200_OK)
-
-@api_view(['GET'])
-@firebase_auth_required
-def get_user_info(request):
-    """Get current user info including role"""
+@clerk_auth_required
+def get_clerk_user_info(request):
+    """Get current Clerk user info including role"""
     serializer = UserSerializer(request.user)
     return Response(serializer.data)
 
-@api_view(['PUT'])
-def update_user_role(request):
-    """
-    Update user role - allows users to update their own role
-    or admin to update any user's role
-    """
-    id_token = request.headers.get("Authorization")
-    if id_token and id_token.startswith("Bearer "):
-        id_token = id_token.split("Bearer ")[1]
-        
-        try:
-            # Verify token directly without requiring existing user
-            decoded_token = firebase_auth.verify_id_token(id_token)
-            uid = decoded_token.get("uid")
-            email = decoded_token.get("email", "")
-            new_role = request.data.get('role')
-            
-            if not new_role or new_role not in ['hunter', 'owner', 'mover', 'admin']:
-                return Response({'error': 'Invalid role'}, status=400)
-            
-            # Check if current user has permission to change role
-            try:
-                # Try to find the user first
-                user = UserProfile.objects.get(uid=uid)
-                
-                # Only admins should be able to change their role directly
-                if user.role != 'admin' and user.role != new_role:
-                    # For normal users, only allow role change if they don't have a role yet
-                    # or if they're updating to the same role they already have
-                    return Response({'error': 'You cannot change your role after registration'}, status=403)
-                
-            except UserProfile.DoesNotExist:
-                # New user - allow role selection during initial creation
-                pass
-                
-            # Get or create user
-            user, created = UserProfile.objects.update_or_create(
-                uid=uid,
-                defaults={
-                    "email": email,
-                    "role": new_role,
-                    "username": email.split('@')[0] if email else uid[:8],
-                    "is_active": True
-                }
-            )
-            
-            # Update Firebase custom claims
-            try:
-                # CRITICAL: Set all claims in one operation - don't just add the role
-                firebase_auth.set_custom_user_claims(uid, {'role': new_role})
-                # Force token refresh in the response
-                print(f"Updated Firebase role for {email} to {new_role}")
-                return Response({
-                    'success': True, 
-                    'role': new_role,
-                    'forceRefresh': True  # Signal to the client to force refresh token
-                })
-            except Exception as e:
-                print(f"Firebase update failed: {e}")
-                return Response({"error": f"Firebase claims update failed: {str(e)}"}, status=500)
-                
-        except Exception as e:
-            print(f"Error updating role: {e}")
-            return Response({"error": str(e)}, status=400)
-            
-    return Response({"error": "Invalid token"}, status=401)
-
 @api_view(['POST'])
-def create_user(request):
-    """Create a new user with Firebase token and role"""
+def create_clerk_user(request):
+    """Register a new user from Clerk authentication"""
     id_token = request.headers.get("Authorization")
     if id_token and id_token.startswith("Bearer "):
         id_token = id_token.split("Bearer ")[1]
         
         try:
-            # Verify the token but don't require an existing user
-            decoded_token = firebase_auth.verify_id_token(id_token)
-            uid = decoded_token.get("uid")
-            email = decoded_token.get("email")
-            role = request.data.get("role", "hunter")  # Get role from request
+            # Verify the Clerk token
+            payload = verify_clerk_token(id_token)
+            if not payload:
+                return Response({"error": "Invalid token"}, status=401)
+                
+            clerk_user_id = payload.get('sub')
+            # Get additional user data from request body
+            role = request.data.get("role", "hunter")
             
             if not role or role not in ['hunter', 'owner', 'mover', 'admin']:
                 return Response({'error': 'Invalid role'}, status=400)
                 
-            user, created = UserProfile.objects.get_or_create(
-                uid=uid,
+            # Get user details from Clerk API
+            clerk_user = get_user_from_clerk(clerk_user_id)
+            if not clerk_user:
+                return Response({"error": "Could not fetch user details from Clerk"}, status=400)
+                
+            email = clerk_user.get('email_addresses', [{}])[0].get('email_address', '')
+            username = email.split('@')[0] if email else clerk_user_id[:8]
+            
+            # Create or update user in database
+            user, created = UserProfile.objects.update_or_create(
+                uid=clerk_user_id,
                 defaults={
                     "email": email,
+                    "username": username,
                     "role": role,
-                    "username": email.split('@')[0] if email else uid[:8],
                     "is_active": True
                 }
             )
             
-            # If user already exists, don't change their role
-            # This prevents role tampering during login
-            if not created:
-                role = user.role  # Use the existing role from database
-                
-            # Set Firebase custom claims for role
-            try:
-                firebase_auth.set_custom_user_claims(uid, {'role': role})
-                print(f"Set Firebase role for {email} to {role}")
-                
-                # Return a signal to force token refresh
-                serializer = UserSerializer(user)
-                return Response({
-                    **serializer.data,
-                    'forceRefresh': True
-                })
-            except Exception as e:
-                print(f"Firebase custom claims update failed: {e}")
-                return Response({
-                    "error": f"Firebase claims update failed: {str(e)}",
-                    **UserSerializer(user).data
-                }, status=206)  # Partial Content
+            serializer = UserSerializer(user)
+            return Response(serializer.data)
                 
         except Exception as e:
             return Response({"error": str(e)}, status=400)
     
     return Response({"error": "Invalid token"}, status=401)
 
-
-@api_view(['PATCH'])
-def update_user(request, uid):
-    """Update user profile details"""
-    if not request.user or request.user.uid != uid and not request.user.is_admin:
-        return Response({'error': 'Permission denied'}, status=status.HTTP_403_FORBIDDEN)
-
-    user = get_object_or_404(UserProfile, uid=uid)
-    serializer = UserSerializer(user, data=request.data, partial=True)
-    if serializer.is_valid():
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_200_OK)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-@api_view(['PATCH'])
-def toggle_user_status(request, uid):
-    """Activate or deactivate a user account (Admin only)"""
-    if not request.user or not request.user.is_admin:
-        return Response({'error': 'Permission denied'}, status=status.HTTP_403_FORBIDDEN)
-
-    user = get_object_or_404(UserProfile, uid=uid)
-    user.is_active = not user.is_active
-    user.save()
-    return Response({'message': 'User status updated successfully'}, status=status.HTTP_200_OK)
+@api_view(['PUT'])
+def update_clerk_user_role(request):
+    """Update a Clerk user's role"""
+    id_token = request.headers.get("Authorization")
+    if id_token and id_token.startswith("Bearer "):
+        id_token = id_token.split("Bearer ")[1]
+        
+        try:
+            # Verify the Clerk token
+            payload = verify_clerk_token(id_token)
+            if not payload:
+                return Response({"error": "Invalid token"}, status=401)
+                
+            clerk_user_id = payload.get('sub')
+            new_role = request.data.get('role')
+            
+            if not new_role or new_role not in ['hunter', 'owner', 'mover', 'admin']:
+                return Response({'error': 'Invalid role'}, status=400)
+            
+            # Check if the user exists
+            try:
+                user = UserProfile.objects.get(uid=clerk_user_id)
+                
+                # Only admins or users without a role should be able to change roles
+                # This is to prevent users from freely changing roles after registration
+                if user.role != 'admin' and user.role and user.role != new_role:
+                    return Response({'error': 'You cannot change your role after registration'}, status=403)
+                    
+                # Update user role
+                user.role = new_role
+                user.save()
+                
+            except UserProfile.DoesNotExist:
+                # User doesn't exist yet, create them with the specified role
+                clerk_user = get_user_from_clerk(clerk_user_id)
+                if not clerk_user:
+                    return Response({"error": "Could not fetch user details from Clerk"}, status=400)
+                    
+                email = clerk_user.get('email_addresses', [{}])[0].get('email_address', '')
+                username = email.split('@')[0] if email else clerk_user_id[:8]
+                
+                user = UserProfile.objects.create(
+                    uid=clerk_user_id,
+                    email=email,
+                    username=username,
+                    role=new_role,
+                    is_active=True
+                )
+            
+            serializer = UserSerializer(user)
+            return Response({
+                **serializer.data,
+                'message': 'Role updated successfully'
+            })
+                
+        except Exception as e:
+            return Response({"error": str(e)}, status=400)
+    
+    return Response({"error": "Invalid token"}, status=401)
