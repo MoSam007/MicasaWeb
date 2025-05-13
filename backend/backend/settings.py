@@ -20,7 +20,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "uploads")
 
 # Static Files
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # Fixed static root
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static')
 ]
@@ -51,7 +51,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    "apps.users.firebase_auth.firebase_auth_middleware",
+    # Use a single middleware selector to determine the auth provider
+    "apps.users.auth_provider_middleware.auth_provider_middleware",
 ]
 
 AUTHENTICATION_BACKENDS = [
@@ -101,6 +102,7 @@ CORS_ALLOW_HEADERS = [
     'user-agent',
     'x-csrftoken',
     'x-requested-with',
+    'x-auth-provider',  # Add this header to determine auth provider
 ]
 
 APPEND_SLASH = False
@@ -124,13 +126,6 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
-AUTH_PASSWORD_VALIDATORS = [
-    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
-    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
-    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
-    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
-]
-
 AUTH_USER_MODEL = "users.UserProfile"
 
 LANGUAGE_CODE = 'en-us'
@@ -142,7 +137,14 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Firebase Configuration
 FIREBASE_CREDENTIALS_PATH = os.path.join(BASE_DIR, 'config', 'serviceAccount.json')
+FIREBASE_CREDENTIALS = FIREBASE_CREDENTIALS_PATH
 
-if not firebase_admin._apps:
+# Only initialize Firebase if credentials exist and we're not in test mode
+if os.path.exists(FIREBASE_CREDENTIALS_PATH) and not firebase_admin._apps:
     cred = credentials.Certificate(FIREBASE_CREDENTIALS_PATH)
     firebase_admin.initialize_app(cred)
+
+# Clerk Configuration
+CLERK_API_KEY = os.environ.get('CLERK_API_KEY', '')
+CLERK_JWT_VERIFICATION_KEY = os.environ.get('CLERK_JWT_VERIFICATION_KEY', '')
+CLERK_ISSUER = os.environ.get('CLERK_ISSUER', '')
