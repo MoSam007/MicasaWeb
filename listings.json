@@ -1,0 +1,246 @@
+[
+    {
+        "l_id": 1,
+        "title": "Micasa Apartments1",
+        "location": "Kasarani, Nairobi",
+        "description": "Spacious 2 bedroom house",
+        "price": "Ksh 12000 ",
+        "amenities": [
+            "2 baths",
+            "2 bedrooms",
+            "hot shower",
+            "gym",
+            "parking space"
+        ],
+        "rating": 4,
+        "imageUrls": [
+            "Apartment1.jpg",
+            "Apartment5.jpg"
+        ],
+        "__v": 0
+    },
+    {
+        "l_id": 2,
+        "title": "Ridge Apartments",
+        "location": "Kasarani, Nairobi",
+        "description": "Luxurious modern 3 bedroom house",
+        "price": "Ksh 18000",
+        "amenities": [
+            "2 baths",
+            "3 bedrooms",
+            "patio",
+            "hot shower",
+            "gym",
+            "kids playground",
+            "parking space"
+        ],
+        "rating": 5,
+        "imageUrls": [
+            "Apartment2.jpg",
+            "Apartment6.jpg"
+        ],
+        "__v": 0
+    },
+    {
+        "l_id": 3,
+        "title": "Highway Complex",
+        "location": "Safari Park, Nairobi",
+        "description": "Luxurious modern 3 bedroom house",
+        "price": "Ksh 20000",
+        "amenities": [
+            "2 baths",
+            "3 bedrooms",
+            "spacious balcony",
+            "hot shower",
+            "gym",
+            "kids playground",
+            "parking space",
+            "laundry room"
+        ],
+        "rating": 3.4,
+        "imageUrls": [
+            "Apartment3.jpg",
+            "Apartment7.jpg"
+        ],
+        "__v": 0
+    },
+    {
+        "l_id": 4,
+        "title": "Grand Heights Apartments",
+        "location": "Seasons Kasarani Mwiki RD, Nairobi",
+        "description": "Beautiful Apartments",
+        "price": "Ksh 15000",
+        "amenities": [
+            "2 baths",
+            "2 bedrooms",
+            "hot shower",
+            "balcony",
+            "gym",
+            "parking space"
+        ],
+        "rating": 5,
+        "imageUrls": [
+            "Apartment4.jpg",
+            "Apartment8.jpg"
+        ],
+        "__v": 0
+    },
+    {
+        "l_id": 5,
+        "title": "Gemini Homes",
+        "location": "Seasons Kasarani Mwiki RD, Nairobi",
+        "description": "Mordern and aesthetic homes",
+        "price": "Ksh 18000",
+        "amenities": [
+            "2 baths",
+            "2 bedrooms",
+            "hot shower",
+            "balcony",
+            "gym",
+            "swimming pool",
+            "parking space"
+        ],
+        "rating": 4,
+        "imageUrls": [
+            "Apartment9.jpg",
+            "Apartment10.jpg"
+        ],
+        "__v": 0
+    },
+    {
+        "l_id": 6,
+        "title": "Grand View Apartments",
+        "location": "Hunters Kasarani Mwiki RD, Nairobi",
+        "description": "Beautiful Apartments",
+        "price": "Ksh 18000",
+        "amenities": [
+            "2 baths",
+            "2 bedrooms",
+            "hot shower",
+            "community gym",
+            "balcony",
+            "parking space",
+            "laundry room"
+        ],
+        "rating": 3,
+        "imageUrls": [
+            "Apartment11.jpg",
+            "Apartment12.jpg"
+        ],
+        "__v": 0
+    },
+    {
+        "l_id": 7,
+        "title": "Garden Estates",
+        "location": "Garden Estate, Nairobi",
+        "description": "Beautiful gardens and lively surroundings",
+        "price": "Ksh 23000",
+        "amenities": [
+            "2 baths",
+            "3 bedrooms",
+            "hot shower",
+            "patio",
+            "community gym",
+            "community pool",
+            "parking space"
+        ],
+        "rating": 5,
+        "imageUrls": [
+            "Hoodview.jpg",
+            "Patio1.jpg"
+        ],
+        "__v": 0
+    },
+    {
+        "l_id": 8,
+        "title": "Point View Apartments",
+        "location": "Nakuru",
+        "description": "Furnished 1 bedroom apartments with great view of the Great Lake Nakuru. Located near the Nakuru National Reserve and has a great variety of rich and beautiful vicinity.",
+        "price": "13000",
+        "amenities": [
+            "1 bedroom",
+            "1 bathroom",
+            "patio",
+            "kids play area",
+            "gym",
+            "community pool",
+            "parking space",
+            "own garden",
+            "lift",
+            "laundry",
+            ""
+        ],
+        "rating": 3,
+        "imageUrls": [
+            "Patio2.jpg",
+            "1731494102306-Stairway.jpg",
+            "1731494102373-FrontView.jpg",
+            "1731494102379-CoffeeTable.jpg"
+        ],
+        "__v": 1
+    },
+    {
+        "l_id": 9,
+        "title": "Mitch Bloc",
+        "location": "Milimani, Nakuru",
+        "description": "Fantastic Homes with beautiful surroundings and scenery. ",
+        "price": "20000",
+        "amenities": [
+            "2 Bedrooms",
+            "2 Bathrooms",
+            "Spacious Kitchen",
+            "swimming pool",
+            "gym",
+            "laundry machine",
+            "mini mart",
+            "kids play area",
+            "chemist",
+            "water refill station",
+            "car wash",
+            "parking",
+            "lift"
+        ],
+        "rating": 4,
+        "imageUrls": [
+            "1730962318035-pool2.jpg",
+            "1730962318127-kidplaying.jpg",
+            "1730962318186-Gym3.jpg",
+            "1730962318229-Bathroom4.jpg",
+            "1730962318280-Interior1.jpg",
+            "1730962318288-Apartment14.jpg",
+            "1730962318336-Apartment13.jpg"
+        ],
+        "__v": 0
+    },
+    {
+        "l_id": 11,
+        "title": "Mitch Block Phase Two",
+        "location": "Lakeview, Nakuru",
+        "description": "Fancy and beautiful apartments. Clean water and fantastic views. Lovely lake with boats and cool fantastic sports like kayaking nearby",
+        "price": "16000",
+        "amenities": [
+            "3 bedrooms",
+            "2 bathrooms",
+            "patio",
+            "firepit",
+            "spacious kitchen",
+            "gym",
+            "garden",
+            "water station",
+            "pool"
+        ],
+        "rating": 5,
+        "imageUrls": [
+            "1730989084055-Livingroom.jpg",
+            "1730989084098-Kitchen.jpg",
+            "1730989084107-FrontView.jpg",
+            "1730989084113-CoffeeTable.jpg",
+            "1730989084131-ApartmentComp.jpg",
+            "1730989084146-Patio1.jpg",
+            "1730989084165-pool2.jpg",
+            "1730989084195-Gym3.jpg",
+            "1730989084215-Bathroom4.jpg"
+        ],
+        "__v": 0
+    }
+]
