@@ -29,3 +29,5 @@ micasaauth-firebase-admin.json
 serviceAccount.json
 
 **.log
+
+src/firebase_to_clerk_migration.py

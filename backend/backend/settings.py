@@ -52,7 +52,9 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     # Use a single middleware selector to determine the auth provider
-    "apps.users.auth_provider_middleware.auth_provider_middleware",
+    # "apps.users.firebase_auth.firebase_auth_middleware",
+    # "apps.users.clerk_auth.clerk_auth_middleware",
+    'apps.users.auth_provider_middleware.auth_provider_middleware',
 ]
 
 AUTHENTICATION_BACKENDS = [

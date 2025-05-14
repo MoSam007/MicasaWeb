@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FaUsers, FaHome, FaTruck, FaChartBar, FaCog, FaSignOutAlt } from 'react-icons/fa';
-import { useAuth } from '../auth/authContext';
+import { useAuth } from '../auth/ClerkauthContext';
 
 const AdminNavigation: React.FC = () => {
   const { logout } = useAuth();
