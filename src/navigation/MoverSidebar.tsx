@@ -9,7 +9,8 @@ import {
   FaTimes,
   FaChartLine,
   FaMoon,
-  FaSun
+  FaSun,
+  FaUserCircle
 } from 'react-icons/fa';
 import { UserDropdown } from './UserDropdown';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -52,21 +53,62 @@ const MoverSidebar: React.FC<MoverSidebarProps> = ({ isDarkMode, toggleDarkMode 
     { to: "/moving-services", icon: <FaTruck />, text: "My Services" },
     { to: "/mover-dashboard", icon: <FaHome />, text: "Available Homes" },
     { to: "/jobs", icon: <FaClipboardList />, text: "Moving Jobs" },
-    { to: "/mover-analytics", icon: <FaChartLine />, text: "Analytics" },
-    { to: "/settings", icon: <FaCog />, text: "Settings" },
+    { to: "/mover-settings", icon: <FaCog />, text: "Settings" },
   ];
+
+  // Animation variants
+  const sidebarVariants = {
+    open: { 
+      x: 0,
+      transition: { 
+        type: "spring", 
+        stiffness: 300, 
+        damping: 30,
+        staggerChildren: 0.1,
+        delayChildren: 0.2
+      }
+    },
+    closed: { 
+      x: isMobile ? -300 : -300,
+      transition: { 
+        type: "spring", 
+        stiffness: 300, 
+        damping: 30,
+        staggerChildren: 0.05,
+        staggerDirection: -1
+      }
+    }
+  };
+
+  const navItemVariants = {
+    open: { 
+      x: 0, 
+      opacity: 1,
+      transition: { type: "spring", stiffness: 300, damping: 20 }
+    },
+    closed: { 
+      x: -20, 
+      opacity: 0,
+      transition: { type: "spring", stiffness: 300, damping: 20 }
+    }
+  };
 
   return (
     <>
       {/* Mobile Toggle Button - Always visible on mobile */}
-      <button
-        className={`lg:hidden fixed z-50 top-4 left-4 p-2 rounded-md ${
+      <motion.button
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        className={`lg:hidden fixed z-50 top-4 left-4 p-3 rounded-full shadow-lg ${
           isDarkMode ? 'bg-gray-800 text-white' : 'bg-green-500 text-white'
         }`}
         onClick={toggleSidebar}
+        initial={false}
+        animate={{ rotate: isOpen ? 180 : 0 }}
+        transition={{ duration: 0.3 }}
       >
         {isOpen ? <FaTimes size={20} /> : <FaBars size={20} />}
-      </button>
+      </motion.button>
 
       <AnimatePresence>
         {/* Mobile Overlay */}
@@ -84,10 +126,10 @@ const MoverSidebar: React.FC<MoverSidebarProps> = ({ isDarkMode, toggleDarkMode 
         {/* Sidebar */}
         {isOpen && (
           <motion.aside
-            initial={{ x: -300 }}
-            animate={{ x: 0 }}
-            exit={{ x: -300 }}
-            transition={{ duration: 0.3 }}
+            initial="closed"
+            animate="open"
+            exit="closed"
+            variants={sidebarVariants}
             className={`fixed inset-y-0 left-0 z-40 w-64 ${
               isDarkMode 
                 ? 'bg-gray-900 text-white shadow-lg shadow-gray-700/50' 
@@ -95,9 +137,17 @@ const MoverSidebar: React.FC<MoverSidebarProps> = ({ isDarkMode, toggleDarkMode 
             } flex flex-col`}
           >
             {/* Logo Area */}
-            <div className="flex items-center justify-between p-4 border-b border-green-400">
+            <motion.div 
+              className="flex items-center justify-between p-4 border-b border-green-400"
+              variants={navItemVariants}
+            >
               <Link to="/moving-services" className="flex items-center space-x-3">
-                <FaTruck size={24} />
+                <motion.div
+                  animate={{ rotate: [0, 10, -10, 10, 0] }}
+                  transition={{ duration: 0.5, delay: 0.5 }}
+                >
+                  <FaTruck size={24} />
+                </motion.div>
                 <span className="text-xl font-bold">MiCasa Movers</span>
               </Link>
               <button 
@@ -106,48 +156,65 @@ const MoverSidebar: React.FC<MoverSidebarProps> = ({ isDarkMode, toggleDarkMode 
               >
                 <FaTimes size={20} />
               </button>
-            </div>
+            </motion.div>
 
             {/* User Profile Summary */}
-            <div className="p-4 border-b border-green-400">
+            <motion.div 
+              className="p-4 border-b border-green-400"
+              variants={navItemVariants}
+            >
               <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 rounded-full bg-green-300 flex items-center justify-center text-green-700 font-bold">
-                  JD
-                </div>
+                <motion.div 
+                  className="w-12 h-12 rounded-full bg-green-300 flex items-center justify-center text-green-700 font-bold overflow-hidden"
+                  whileHover={{ scale: 1.1 }}
+                >
+                  <FaUserCircle size={32} className="text-green-700" />
+                </motion.div>
                 <div>
                   <h3 className="font-medium">John Doe</h3>
                   <p className="text-sm opacity-75">Professional Mover</p>
                 </div>
               </div>
-            </div>
+            </motion.div>
             
             {/* Nav Links */}
             <nav className="flex-1 px-2 py-4 space-y-1 overflow-y-auto">
               {navLinks.map((link) => (
-                <Link
-                  key={link.to}
-                  to={link.to}
-                  className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${
-                    location.pathname === link.to
-                      ? isDarkMode 
-                        ? 'bg-gray-700 text-white' 
-                        : 'bg-green-700 text-white'
-                      : isDarkMode 
-                        ? 'text-gray-300 hover:bg-gray-800' 
-                        : 'text-green-50 hover:bg-green-600'
-                  }`}
-                >
-                  {link.icon}
-                  <span>{link.text}</span>
-                </Link>
+                <motion.div key={link.to} variants={navItemVariants}>
+                  <Link
+                    to={link.to}
+                    className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${
+                      location.pathname === link.to
+                        ? isDarkMode 
+                          ? 'bg-gray-700 text-white' 
+                          : 'bg-green-700 text-white'
+                        : isDarkMode 
+                          ? 'text-gray-300 hover:bg-gray-800' 
+                          : 'text-green-50 hover:bg-green-600'
+                    }`}
+                  >
+                    <motion.div
+                      whileHover={{ rotate: 15 }}
+                      transition={{ type: "spring", stiffness: 300 }}
+                    >
+                      {link.icon}
+                    </motion.div>
+                    <span>{link.text}</span>
+                  </Link>
+                </motion.div>
               ))}
             </nav>
 
             {/* Bottom Controls */}
-            <div className={`px-4 py-3 border-t ${isDarkMode ? 'border-gray-700' : 'border-green-400'}`}>
+            <motion.div 
+              className={`px-4 py-3 border-t ${isDarkMode ? 'border-gray-700' : 'border-green-400'}`}
+              variants={navItemVariants}
+            >
               <div className="flex items-center justify-between">
-                <button
+                <motion.button
                   onClick={toggleDarkMode}
+                  whileHover={{ scale: 1.1, rotate: 15 }}
+                  whileTap={{ scale: 0.9 }}
                   className={`p-2 rounded-lg ${
                     isDarkMode 
                       ? 'bg-gray-700 text-yellow-300' 
@@ -155,10 +222,10 @@ const MoverSidebar: React.FC<MoverSidebarProps> = ({ isDarkMode, toggleDarkMode 
                   }`}
                 >
                   {isDarkMode ? <FaSun size={18} /> : <FaMoon size={18} />}
-                </button>
+                </motion.button>
                 <UserDropdown theme={isDarkMode ? "dark" : "light"} />
               </div>
-            </div>
+            </motion.div>
           </motion.aside>
         )}
       </AnimatePresence>
@@ -168,7 +235,9 @@ const MoverSidebar: React.FC<MoverSidebarProps> = ({ isDarkMode, toggleDarkMode 
         <motion.button
           initial={{ opacity: 0, x: -10 }}
           animate={{ opacity: 1, x: 0 }}
-          className={`fixed z-50 top-4 left-4 p-2 rounded-md ${
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+          className={`fixed z-40 top-4 left-4 p-3 rounded-full shadow-lg ${
             isDarkMode ? 'bg-gray-800 text-white' : 'bg-green-500 text-white'
           }`}
           onClick={toggleSidebar}

@@ -22,6 +22,7 @@ import UserManagement from './pages/Owners/AddListingForm';
 import Gallery from './pages/Gallery';
 import About from './pages/Public/About';
 import NotFound from './pages/Public/FAQ';
+import MoverSettings from './pages/Movers/MoverSettings';  // Import the MoverSettings component
 
 import './App.css';
 import MovingJobs from './pages/Movers/MovingJobs';
@@ -139,6 +140,15 @@ function App() {
                 element={
                   <ProtectedRoute allowedRoles={['mover', 'admin']}>
                     <MovingJobs />
+                  </ProtectedRoute>
+                } 
+              />
+              {/* Add Settings Route */}
+              <Route 
+                path="/mover-settings" 
+                element={
+                  <ProtectedRoute allowedRoles={['mover', 'admin']}>
+                    <MoverSettings />
                   </ProtectedRoute>
                 } 
               />
