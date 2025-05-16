@@ -31,3 +31,5 @@ serviceAccount.json
 **.log
 
 src/firebase_to_clerk_migration.py
+
+**.env

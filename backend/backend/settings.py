@@ -82,7 +82,8 @@ TEMPLATES = [
 WSGI_APPLICATION = 'backend.wsgi.application'
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",  # React frontend
+    "http://localhost:3000",
+    "http://localhost:5173",  
 ]
 
 CORS_ALLOW_METHODS = [
@@ -104,7 +105,7 @@ CORS_ALLOW_HEADERS = [
     'user-agent',
     'x-csrftoken',
     'x-requested-with',
-    'x-auth-provider',  # Add this header to determine auth provider
+    'x-auth-provider', 
 ]
 
 APPEND_SLASH = False

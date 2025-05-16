@@ -16,6 +16,7 @@
     "@types/react-dom": "^18.3.0",
     "autoprefixer": "^10.4.20",
     "axios": "^1.7.3",
+    "chart.js": "^4.4.9",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
@@ -26,6 +27,7 @@
     "lucide-react": "^0.487.0",
     "mongoose": "^8.5.2",
     "multer": "^1.4.5-lts.1",
+    "next": "^15.3.2",
     "postcss": "^8.4.41",
     "react": "^18.3.1",
     "react-chartjs-2": "^5.3.0",
@@ -67,6 +69,7 @@
   "devDependencies": {
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
     "@types/cors": "^2.8.17",
-    "ts-node": "^10.9.2"
+    "ts-node": "^10.9.2",
+    "vite": "^6.3.5"
   }
 }
