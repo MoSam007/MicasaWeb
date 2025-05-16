@@ -13,7 +13,7 @@ import {
 import { Pie, Bar } from 'react-chartjs-2';
 import { FaTruck, FaCalendarAlt, FaMoneyBillWave, FaClock, FaFilter, FaSearch, FaSortAmountDown } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
-import MoverLayout from '../layouts/MoverLayout';
+import MoverLayout from '../../layouts/MoverLayout';
 
 // Register ChartJS components
 ChartJS.register(

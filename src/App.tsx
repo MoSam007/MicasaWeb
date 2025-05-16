@@ -7,23 +7,25 @@ import Footer from './components/Footer';
 
 // Pages
 import Home from './pages/Listings';
-import Login from './pages/Login';
-import Register from './pages/Register';
+import Login from './pages/Public/Login';
+import Register from './pages/Public/Register';
 import Listings from './pages/Listings';
 import ListingDetails from './pages/ListingDetail';
-import Wishlist from './pages/Wishlist';
-import OwnerDashboard from './pages/AdminListingManager';
-import AddListing from './pages/AddListingForm';
-import ManageListings from './pages/AdminListingDetail';
-import MoverDashboard from './pages/MoverHome';
-import MovingServices from './pages/MoverHome';
-import AdminDashboard from './pages/AdminListingManager';
-import UserManagement from './pages/AddListingForm';
+import Wishlist from './pages/Hunters/Wishlist';
+import OwnerDashboard from './pages/Owners/AdminListingManager';
+import AddListing from './pages/Owners/AddListingForm';
+import ManageListings from './pages/Owners/AdminListingDetail';
+import MoverDashboard from './navigation/MoverSidebar';
+import MovingServices from './pages/Movers/MoverHome';
+import AdminDashboard from './pages/Owners/AdminListingManager';
+import UserManagement from './pages/Owners/AddListingForm';
 import Gallery from './pages/Gallery';
-import About from './pages/About';
-import NotFound from './pages/FAQ';
+import About from './pages/Public/About';
+import NotFound from './pages/Public/FAQ';
 
 import './App.css';
+import MovingJobs from './pages/Movers/MovingJobs';
+import MoverHome from './pages/Movers/MoverHome';
 
 function App() {
   return (
@@ -117,10 +119,18 @@ function App() {
               
               {/* Mover Routes */}
               <Route 
+                path="/mover-dashboard" 
+                element={
+                  <ProtectedRoute allowedRoles={['mover', 'admin']}>
+                    <MoverDashboard isDarkMode={false} toggleDarkMode={() => {}} />
+                  </ProtectedRoute>
+                }
+              />
+              <Route 
                 path="/moving-services" 
                 element={
                   <ProtectedRoute allowedRoles={['mover', 'admin']}>
-                    <MoverDashboard />
+                    <MovingServices />
                   </ProtectedRoute>
                 } 
               />
@@ -128,7 +138,7 @@ function App() {
                 path="/jobs" 
                 element={
                   <ProtectedRoute allowedRoles={['mover', 'admin']}>
-                    <MovingServices />
+                    <MovingJobs />
                   </ProtectedRoute>
                 } 
               />

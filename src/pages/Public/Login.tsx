@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useAuth } from '../auth/authContext';
+import { useAuth } from '../../auth/authContext';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { FaGoogle, FaFacebook, FaEnvelope, FaLock } from 'react-icons/fa';
 

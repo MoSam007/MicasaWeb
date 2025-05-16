@@ -14,7 +14,7 @@ import {
 } from 'chart.js';
 import { FaTruck, FaCheckCircle, FaDollarSign, FaStar } from 'react-icons/fa';
 import { motion } from 'framer-motion';
-import MoverLayout from '../layouts/MoverLayout';
+import MoverLayout from '../../layouts/MoverLayout';
 
 // Register ChartJS components
 ChartJS.register(

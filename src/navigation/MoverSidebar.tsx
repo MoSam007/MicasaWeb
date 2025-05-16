@@ -50,7 +50,7 @@ const MoverSidebar: React.FC<MoverSidebarProps> = ({ isDarkMode, toggleDarkMode 
   // Navigation links data
   const navLinks = [
     { to: "/moving-services", icon: <FaTruck />, text: "My Services" },
-    { to: "/homes", icon: <FaHome />, text: "Available Homes" },
+    { to: "/mover-dashboard", icon: <FaHome />, text: "Available Homes" },
     { to: "/jobs", icon: <FaClipboardList />, text: "Moving Jobs" },
     { to: "/mover-analytics", icon: <FaChartLine />, text: "Analytics" },
     { to: "/settings", icon: <FaCog />, text: "Settings" },
