@@ -27,6 +27,7 @@ import MoverSettings from './pages/Movers/MoverSettings';  // Import the MoverSe
 import './App.css';
 import MovingJobs from './pages/Movers/MovingJobs';
 import MoverHome from './pages/Movers/MoverHome';
+import MoverAnalytics from './pages/Movers/MoverAnalytics';
 
 function App() {
   return (
@@ -143,7 +144,6 @@ function App() {
                   </ProtectedRoute>
                 } 
               />
-              {/* Add Settings Route */}
               <Route 
                 path="/mover-settings" 
                 element={
@@ -152,7 +152,14 @@ function App() {
                   </ProtectedRoute>
                 } 
               />
-              
+              <Route 
+                path="/mover-analytics" 
+                element={
+                  <ProtectedRoute allowedRoles={['mover', 'admin']}>
+                    <MoverAnalytics />
+                  </ProtectedRoute>
+                } 
+              />
               {/* Admin Routes */}
               <Route 
                 path="/admin/dashboard" 
