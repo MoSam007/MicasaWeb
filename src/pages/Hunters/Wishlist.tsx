@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../auth/authContext';
+import { useAuth } from '../../auth/authContext';
 import { FaHeart, FaTrash } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 

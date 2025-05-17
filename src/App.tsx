@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { AuthProvider } from './auth/authContext';
+import { AuthProvider } from './auth/ClerkauthContext';
 import NavigationRouter from './navigation/NavigationRouter';
 import ProtectedRoute from './components/protectedRoutes';
 import Footer from './components/Footer';

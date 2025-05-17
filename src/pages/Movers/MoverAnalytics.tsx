@@ -17,8 +17,9 @@ import { Line, Bar, Radar, Doughnut } from 'react-chartjs-2';
 import { FaTruck, FaChartLine, FaMapMarkerAlt, FaDollarSign, FaUserFriends, FaStar, FaCalendarAlt } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import MoverLayout from '../../layouts/MoverLayout';
-import Map, { Marker, Source, Layer } from 'react-map-gl';
+import { Marker, Source, Layer } from 'react-map-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
+import Map from 'react-map-gl/maplibre'; 
 
 // Register ChartJS components
 ChartJS.register(
