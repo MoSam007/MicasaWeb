@@ -17,9 +17,8 @@ import { Line, Bar, Radar, Doughnut } from 'react-chartjs-2';
 import { FaTruck, FaChartLine, FaMapMarkerAlt, FaDollarSign, FaUserFriends, FaStar, FaCalendarAlt } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import MoverLayout from '../../layouts/MoverLayout';
-import { Marker, Source, Layer } from 'react-map-gl';
+import Map, { Marker, Source, Layer } from 'react-map-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
-import Map from 'react-map-gl/maplibre'; 
 
 // Register ChartJS components
 ChartJS.register(
@@ -615,14 +614,12 @@ const MoverAnalytics: React.FC = () => {
                     <div className="h-[500px] rounded-lg overflow-hidden relative">
                       <Map
                         {...viewport}
-                        onViewportChange={setViewport}
-                        width="100%"
-                        height="100%"
+                        onMove={evt => setViewport(evt.viewState)}
                         style={{ width: '100%', height: '100%' }}
                         mapStyle={isDarkMode 
                           ? 'mapbox://styles/mapbox/dark-v11' 
                           : 'mapbox://styles/mapbox/light-v11'}
-                        mapboxApiAccessToken="pk.eyJ1IjoiZXhhbXBsZXVzZXIiLCJhIjoiY2xleGFtcGxlIjoiZXhhbXBsZWtleSJ9.exampletoken"
+                        mapboxAccessToken="pk.eyJ1IjoiZXhhbXBsZXVzZXIiLCJhIjoiY2xleGFtcGxlIjoiZXhhbXBsZWtleSJ9.exampletoken"
                       >
                        {/* Route line */}
                       {truckPath.length > 1 && (

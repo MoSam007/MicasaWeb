@@ -24,6 +24,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const { user } = useUser();
   const [userRole, setRole] = useState<UserRole | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
+  const { getToken } = useClerkAuth(); 
 
   // Fetch user role from Django backend using Clerk token
   const fetchUserRole = async () => {
@@ -35,7 +36,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     try {
       // Get session token
-      const token = await useClerkAuth().getToken();
+      const token = await getToken();
       
       if (!token) {
         console.error("No token available");
@@ -113,7 +114,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     try {
       // Get token for backend authentication
-      const token = await useClerkAuth().getToken();
+      const token = await getToken();
       
       // Update role in backend
       const response = await fetch('http://127.0.0.1:8000/api/users/clerk/role/', {
