@@ -25,7 +25,6 @@ import About from './pages/Public/About';
 import NotFound from './pages/Public/FAQ';
 import MoverSettings from './pages/Movers/MoverSettings';
 import MovingJobs from './pages/Movers/MovingJobs';
-import MoverHome from './pages/Movers/MoverHome';
 import MoverAnalytics from './pages/Movers/MoverAnalytics';
 
 import './App.css';
@@ -152,14 +151,6 @@ function App() {
               element={
                 <ProtectedRoute allowedRoles={['mover', 'admin']}>
                   <MovingServices />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/mover-home" 
-              element={
-                <ProtectedRoute allowedRoles={['mover', 'admin']}>
-                  <MoverHome />
                 </ProtectedRoute>
               } 
             />

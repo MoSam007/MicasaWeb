@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth as useClerkAuth, useUser } from '@clerk/clerk-react';
+import { useNavigate } from 'react-router-dom';
 
 type UserRole = 'hunter' | 'owner' | 'mover' | 'admin';
 
@@ -13,6 +14,7 @@ interface AuthContextType {
   setUserRole: (role: UserRole) => Promise<void>;
   logout: () => Promise<void>;
   checkUserPermission: (requiredRoles: UserRole[]) => boolean;
+  refreshUserData: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({} as AuthContextType);
@@ -27,7 +29,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [userRole, setRole] = useState<UserRole | null>(null);
   const [username, setUsername] = useState<string | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
-  const { getToken, signOut } = useClerkAuth(); 
+  const { getToken, signOut } = useClerkAuth();
+  const navigate = useNavigate();
 
   // Fetch user role from Django backend using Clerk token
   const fetchUserRole = async () => {
@@ -87,7 +90,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           try {
             await user?.update({
               unsafeMetadata: {
-                ...user.unsafeMetadata,
+                ...user.publicMetadata,
                 role: 'hunter'
               }
             });
@@ -161,7 +164,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Update role in Clerk metadata directly using Clerk SDK
       await user.update({
         unsafeMetadata: {
-          ...user.unsafeMetadata,
+          ...user.publicMetadata,
           role
         }
       });
@@ -170,9 +173,39 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setRole(role);
       
       console.log(`User role updated to ${role}`);
+      
+      // Navigate user to appropriate dashboard based on their new role
+      redirectBasedOnRole(role);
     } catch (error) {
       console.error('Error updating user role:', error);
       throw error; // Rethrow to allow component to handle errors
+    }
+  };
+
+  // Redirect user based on role
+  const redirectBasedOnRole = (role: UserRole) => {
+    switch (role) {
+      case 'hunter':
+        navigate('/listings');
+        break;
+      case 'owner':
+        navigate('/my-listings');
+        break;
+      case 'mover':
+        navigate('/moving-services');
+        break;
+      case 'admin':
+        navigate('/admin/dashboard');
+        break;
+      default:
+        navigate('/');
+    }
+  };
+
+  // Function to manually refresh user data
+  const refreshUserData = async () => {
+    if (isSignedIn && userId) {
+      await fetchUserRole();
     }
   };
 
@@ -182,6 +215,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       await signOut();
       setRole(null);
       setUsername(null);
+      navigate('/');
     } catch (error) {
       console.error('Error during logout:', error);
       throw error;
@@ -215,7 +249,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     userRole,
     setUserRole,
     logout,
-    checkUserPermission
+    checkUserPermission,
+    refreshUserData
   };
 
   return (
