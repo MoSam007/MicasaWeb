@@ -11,6 +11,7 @@ interface AuthContextType {
   userRole: UserRole | null;
   setUserRole: (role: UserRole) => Promise<void>;
   logout: () => Promise<void>;
+  checkUserPermission: (requiredRoles: UserRole[]) => boolean;
 }
 
 const AuthContext = createContext<AuthContextType>({} as AuthContextType);
@@ -24,7 +25,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const { user } = useUser();
   const [userRole, setRole] = useState<UserRole | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
-  const { getToken } = useClerkAuth(); 
+  const { getToken, signOut } = useClerkAuth(); 
 
   // Fetch user role from Django backend using Clerk token
   const fetchUserRole = async () => {
@@ -45,9 +46,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       
       // Try to get user info from backend
-      const response = await fetch('http://127.0.0.1:8000/api/users/info/', {
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000'}/api/users/info/`, {
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token}`,
+          'X-Auth-Provider': 'clerk' // Explicitly tell the backend to use Clerk auth
         }
       });
       
@@ -75,6 +77,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           // Default to hunter if no role is found anywhere
           console.log("No role found, defaulting to hunter");
           setRole('hunter');
+          
+          // Save this default role to Clerk metadata
+          try {
+            await user?.update({
+              unsafeMetadata: {
+                ...user.unsafeMetadata,
+                role: 'hunter'
+              }
+            });
+          } catch (error) {
+            console.error("Error updating Clerk metadata:", error);
+          }
         }
       } else {
         console.error('Error fetching user info:', response.status);
@@ -91,11 +105,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Create user in backend with role
   const createUserInBackend = async (token: string, role: UserRole) => {
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/users/clerk/create/', {
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000'}/api/users/clerk/create/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token}`,
+          'X-Auth-Provider': 'clerk'
         },
         body: JSON.stringify({ role })
       });
@@ -117,11 +132,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const token = await getToken();
       
       // Update role in backend
-      const response = await fetch('http://127.0.0.1:8000/api/users/clerk/role/', {
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000'}/api/users/clerk/role/`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token}`,
+          'X-Auth-Provider': 'clerk'
         },
         body: JSON.stringify({ role })
       });
@@ -130,30 +146,44 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         throw new Error('Failed to update role in backend');
       }
       
-      // Update role in Clerk metadata
-      await fetch('/api/clerk/updateUserMetadata', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          userId: userId,
-          metadata: { role }
-        })
+      // Update role in Clerk metadata directly using Clerk SDK
+      await user.update({
+        unsafeMetadata: {
+          ...user.unsafeMetadata,
+          role
+        }
       });
       
       // Update local state
       setRole(role);
+      
+      console.log(`User role updated to ${role}`);
     } catch (error) {
       console.error('Error updating user role:', error);
+      throw error; // Rethrow to allow component to handle errors
     }
   };
 
   // Logout function
   const logout = async () => {
-    // Clerk's signOut is handled by ClerkProvider
-    // Just clear our local state
-    setRole(null);
+    try {
+      await signOut();
+      setRole(null);
+    } catch (error) {
+      console.error('Error during logout:', error);
+      throw error;
+    }
+  };
+  
+  // Helper function to check if user has the required role
+  const checkUserPermission = (requiredRoles: UserRole[]): boolean => {
+    if (!isSignedIn || !userRole) return false;
+    
+    // Admin role has access to everything
+    if (userRole === 'admin') return true;
+    
+    // Check if user's role is in the required roles array
+    return requiredRoles.includes(userRole);
   };
 
   // Load user role when auth state changes
@@ -170,7 +200,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     userEmail: user?.primaryEmailAddress?.emailAddress || null,
     userRole,
     setUserRole,
-    logout
+    logout,
+    checkUserPermission
   };
 
   return (

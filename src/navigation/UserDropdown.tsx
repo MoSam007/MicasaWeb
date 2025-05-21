@@ -1,14 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../auth/authContext';
+import { useAuth } from '../auth/ClerkauthContext'; 
 import { FaUserCircle, FaCog, FaSignOutAlt } from 'react-icons/fa';
 
 interface UserDropdownProps {
   theme?: 'light' | 'dark';
 }
 
-export const UserDropdown: React.FC<UserDropdownProps> = ({ theme = 'dark' }) => {
-  const { currentUser, logout } = useAuth();
+export const UserDropdown: React.FC<UserDropdownProps> = ({ theme = 'light' }) => {
+  const { userEmail, logout } = useAuth(); 
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -42,7 +42,7 @@ export const UserDropdown: React.FC<UserDropdownProps> = ({ theme = 'dark' }) =>
       >
         <FaUserCircle className="h-6 w-6" />
         <span className="text-sm font-medium">
-          {currentUser?.email?.split('@')[0]}
+          {userEmail?.split('@')[0]}
         </span>
       </button>
 
