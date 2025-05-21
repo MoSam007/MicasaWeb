@@ -8,6 +8,7 @@ interface AuthContextType {
   isSignedIn: boolean | undefined;
   userId: string | null;
   userEmail: string | null;
+  username: string | null;
   userRole: UserRole | null;
   setUserRole: (role: UserRole) => Promise<void>;
   logout: () => Promise<void>;
@@ -24,6 +25,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const { isLoaded: clerkLoaded, userId, isSignedIn } = useClerkAuth();
   const { user } = useUser();
   const [userRole, setRole] = useState<UserRole | null>(null);
+  const [username, setUsername] = useState<string | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const { getToken, signOut } = useClerkAuth(); 
 
@@ -31,6 +33,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const fetchUserRole = async () => {
     if (!isSignedIn || !userId) {
       setRole(null);
+      setUsername(null);
       setIsLoaded(true);
       return;
     }
@@ -46,7 +49,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       
       // Try to get user info from backend
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000'}/api/users/info/`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000'}/api/users/clerk/info/`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'X-Auth-Provider': 'clerk' // Explicitly tell the backend to use Clerk auth
@@ -56,16 +59,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (response.ok) {
         const userData = await response.json();
         const backendRole = userData.role as UserRole;
+        const backendUsername = userData.username;
         
         console.log("Fetched user role from backend:", backendRole);
         setRole(backendRole);
+        setUsername(backendUsername);
       } else if (response.status === 404 || response.status === 401) {
         // User doesn't exist in backend yet
         console.log("User not found in backend");
         
         // Check if role is in Clerk metadata
-        const publicMetadata = user?.publicMetadata;
-        const metadataRole = publicMetadata?.role as UserRole | undefined;
+        const publicMetadata = user?.publicMetadata as { role?: UserRole };
+        const metadataRole = publicMetadata?.role;
         
         if (metadataRole) {
           console.log("Found role in Clerk metadata:", metadataRole);
@@ -86,6 +91,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 role: 'hunter'
               }
             });
+            
+            // Also create user in backend
+            await createUserInBackend(token, 'hunter');
           } catch (error) {
             console.error("Error updating Clerk metadata:", error);
           }
@@ -117,6 +125,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       if (!response.ok) {
         console.error('Failed to create user in backend:', await response.text());
+      } else {
+        // Get the created user data including username
+        const userData = await response.json();
+        setUsername(userData.username);
       }
     } catch (error) {
       console.error('Error creating user in backend:', error);
@@ -169,6 +181,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       await signOut();
       setRole(null);
+      setUsername(null);
     } catch (error) {
       console.error('Error during logout:', error);
       throw error;
@@ -198,6 +211,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     isSignedIn,
     userId: userId ?? null,
     userEmail: user?.primaryEmailAddress?.emailAddress || null,
+    username,
     userRole,
     setUserRole,
     logout,
