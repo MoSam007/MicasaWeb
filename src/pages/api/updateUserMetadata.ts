@@ -1,7 +1,9 @@
-import { clerkClient } from '@clerk/nextjs/server';
-import type { NextApiRequest, NextApiResponse } from 'next';
+import { Clerk } from '@clerk/clerk-sdk-node';
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+// Initialize Clerk with your secret key
+const clerk = Clerk({ secretKey: process.env.CLERK_SECRET_KEY });
+
+export default async function handler(req: { method: string; body: { userId: any; metadata: any; }; }, res: { status: (arg0: number) => { (): any; new(): any; json: { (arg0: { error?: string; success?: boolean; }): any; new(): any; }; }; }) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -9,14 +11,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     const { userId, metadata } = req.body;
 
-    if (!userId || !metadata) {
-      return res.status(400).json({ error: 'Missing required parameters' });
+    if (!userId) {
+      return res.status(400).json({ error: 'Missing user ID' });
     }
 
-    // Update the user's public metadata in Clerk
-    const client = await clerkClient();
-    await client.users.updateUserMetadata(userId, {
-      publicMetadata: metadata
+    // Update the user's metadata in Clerk
+    await clerk.users.updateUser(userId, {
+      publicMetadata: metadata,
     });
 
     return res.status(200).json({ success: true });

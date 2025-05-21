@@ -7,8 +7,8 @@ import Footer from './components/Footer';
 
 // Pages
 import Home from './pages/Listings';
-import Login from './pages/Public/SignIn';
-import Register from './pages/Public/SignUp';
+import CustomSignIn from './pages/Public/CustomSignIn';
+import CustomSignUp from './pages/Public/CustomSignUp';
 import Listings from './pages/Listings';
 import ListingDetails from './pages/ListingDetail';
 import Wishlist from './pages/Hunters/Wishlist';
@@ -28,7 +28,6 @@ import MoverHome from './pages/Movers/MoverHome';
 import MoverAnalytics from './pages/Movers/MoverAnalytics';
 
 import './App.css';
-import { SignIn, SignUp } from '@clerk/clerk-react';
 
 function App() {
   return (
@@ -43,7 +42,7 @@ function App() {
               path="/login" 
               element={
                 <ProtectedRoute requireAuth={false}>
-                  <SignIn />
+                  <CustomSignIn />
                 </ProtectedRoute>
               } 
             />
@@ -51,7 +50,7 @@ function App() {
               path="/register" 
               element={
                 <ProtectedRoute requireAuth={false}>
-                  <SignUp />
+                  <CustomSignUp />
                 </ProtectedRoute>
               } 
             />

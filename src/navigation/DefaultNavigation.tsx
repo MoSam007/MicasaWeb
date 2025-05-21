@@ -1,12 +1,11 @@
-// src/navigation/DefaultNavigation.tsx
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FaHome, FaSearch, FaInfoCircle, FaSignOutAlt } from 'react-icons/fa';
-import { useAuth } from '../auth/authContext';
+import { useAuth } from '../auth/ClerkauthContext';
 import Logo from '../images/MiCasa.png';
 
 const DefaultNavigation: React.FC = () => {
-  const { currentUser, logout } = useAuth();
+  const { isSignedIn, logout } = useAuth();
   const navigate = useNavigate();
 
   const handleSignOut = async () => {
@@ -45,7 +44,7 @@ const DefaultNavigation: React.FC = () => {
           </div>
 
           <div className="flex items-center space-x-4">
-            {currentUser ? (
+            {isSignedIn ? (
               <button
                 onClick={handleSignOut}
                 className="flex items-center text-yellow-600 hover:text-yellow-700 font-medium"

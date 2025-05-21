@@ -1,5 +1,5 @@
 import React from 'react';
-import { useAuth } from '../auth/authContext';
+import { useAuth } from '../auth/ClerkauthContext';
 import DefaultNavigation from './DefaultNavigation';
 import HunterNavigation from './HunterNavigation';
 import OwnerNavigation from './OwnerNavigation';
@@ -7,12 +7,21 @@ import MoverNavigation from './MoverNavigation';
 import AdminNavigation from './AdminNavigation'; 
 
 const NavigationRouter: React.FC = () => {
-  const { currentUser, userRole } = useAuth();
+  const { isSignedIn, userRole, isLoaded } = useAuth();
   
-  console.log("NavigationRouter - currentUser:", currentUser?.email, "userRole:", userRole);
+  console.log("NavigationRouter - User signed in:", isSignedIn, "userRole:", userRole);
+
+  // Show loading state while auth is initializing
+  if (!isLoaded) {
+    return (
+      <div className="h-16 bg-white shadow-sm flex items-center justify-center">
+        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-yellow-600"></div>
+      </div>
+    );
+  }
 
   // Not logged in or no role information
-  if (!currentUser || !userRole) {
+  if (!isSignedIn || !userRole) {
     return <DefaultNavigation />;
   }
 
@@ -25,7 +34,7 @@ const NavigationRouter: React.FC = () => {
     case 'mover':
       return <MoverNavigation />;
     case 'admin':
-      return <AdminNavigation />; // You'll need to create this component
+      return <AdminNavigation />; 
     default:
       console.log("NavigationRouter - Falling back to DefaultNavigation (unknown role)");
       return <DefaultNavigation />;
