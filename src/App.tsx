@@ -9,6 +9,7 @@ import Footer from './components/Footer';
 import Home from './pages/Listings';
 import CustomSignIn from './pages/Public/CustomSignIn';
 import CustomSignUp from './pages/Public/CustomSignUp';
+import EmailVerification from './pages/Public/VerifyEmail'; 
 import Listings from './pages/Listings';
 import ListingDetails from './pages/ListingDetail';
 import Wishlist from './pages/Hunters/Wishlist';
@@ -28,6 +29,7 @@ import MoverHome from './pages/Movers/MoverHome';
 import MoverAnalytics from './pages/Movers/MoverAnalytics';
 
 import './App.css';
+import MoverSidebar from './navigation/MoverSidebar';
 
 function App() {
   return (
@@ -54,6 +56,24 @@ function App() {
                 </ProtectedRoute>
               } 
             />
+            {/* Email verification route */}
+            <Route 
+              path="/register/verify-email-address" 
+              element={
+                <ProtectedRoute requireAuth={false}>
+                  <EmailVerification />
+                </ProtectedRoute>
+              } 
+            />
+            {/* <Route 
+              path="/settings" 
+              element={
+                <ProtectedRoute requireAuth={true}>
+                  <Default Settings />
+                </ProtectedRoute>
+              } 
+            /> 
+            //make sure to implement*/}
             <Route path="/about" element={<About />} />
 
             {/* Listing detail */}
@@ -132,6 +152,14 @@ function App() {
               element={
                 <ProtectedRoute allowedRoles={['mover', 'admin']}>
                   <MovingServices />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/mover-home" 
+              element={
+                <ProtectedRoute allowedRoles={['mover', 'admin']}>
+                  <MoverHome />
                 </ProtectedRoute>
               } 
             />
