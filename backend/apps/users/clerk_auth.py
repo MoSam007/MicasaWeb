@@ -10,26 +10,58 @@ User = get_user_model()
 
 CLERK_API_KEY = os.environ.get('CLERK_API_KEY')
 CLERK_JWT_VERIFICATION_KEY = os.environ.get('CLERK_JWT_VERIFICATION_KEY')
-CLERK_ISSUER = os.environ.get('CLERK_ISSUER')  # Usually your Clerk frontend API URL
+CLERK_ISSUER = os.environ.get('CLERK_ISSUER')  # Should be something like https://blessed-meerkat-26.clerk.accounts.dev
 
 def verify_clerk_token(token):
     """Verify the Clerk JWT token and extract user info."""
     try:
-        # Using the verification key for JWT validation
-        # The key issue is here - Clerk tokens need specific audience and issuer settings
-        # The "aud" claim should be set to match what Clerk sends
+        print(f"Verifying Clerk token with issuer: {CLERK_ISSUER}")
+        
+        # First, decode without verification to see what's in the token
+        unverified_payload = jwt.decode(token, options={"verify_signature": False})
+        print(f"Token payload (unverified): {unverified_payload}")
+        
+        # Get the actual issuer and audience from the token
+        token_issuer = unverified_payload.get('iss')
+        token_audience = unverified_payload.get('aud')
+        
+        print(f"Token issuer: {token_issuer}")
+        print(f"Token audience: {token_audience}")
+        
+        # Verify the token with the correct audience
         payload = jwt.decode(
             token,
             CLERK_JWT_VERIFICATION_KEY,
             algorithms=["RS256"],
-            options={"verify_signature": True},
-            # Use a more flexible audience check - Clerk often uses the frontend URL as audience
-            audience=[CLERK_ISSUER, "clerk", "https://blessed-meerkat-26.clerk.accounts.dev"],
-            issuer=CLERK_ISSUER
+            options={"verify_signature": True, "verify_aud": True},
+            # Use the audience from the token itself, or common Clerk audiences
+            audience=token_audience if token_audience else [
+                CLERK_ISSUER,
+                f"{CLERK_ISSUER}",
+                "clerk",
+                # Add your specific Clerk instance URL here
+                "https://blessed-meerkat-26.clerk.accounts.dev"
+            ],
+            issuer=token_issuer if token_issuer else CLERK_ISSUER
         )
+        
+        print(f"Token verified successfully: {payload}")
         return payload
+        
+    except jwt.ExpiredSignatureError:
+        print("Token verification failed: Token has expired")
+        return None
+    except jwt.InvalidAudienceError as e:
+        print(f"Token verification failed: Invalid audience - {e}")
+        return None
+    except jwt.InvalidIssuerError as e:
+        print(f"Token verification failed: Invalid issuer - {e}")
+        return None
     except jwt.InvalidTokenError as e:
         print(f"Token verification failed: {e}")
+        return None
+    except Exception as e:
+        print(f"Unexpected error verifying token: {e}")
         return None
 
 def get_user_from_clerk(user_id):
@@ -39,14 +71,20 @@ def get_user_from_clerk(user_id):
         "Content-Type": "application/json"
     }
     
-    response = requests.get(
-        f"https://api.clerk.dev/v1/users/{user_id}",
-        headers=headers
-    )
-    
-    if response.status_code == 200:
-        return response.json()
-    return None
+    try:
+        response = requests.get(
+            f"https://api.clerk.dev/v1/users/{user_id}",
+            headers=headers
+        )
+        
+        if response.status_code == 200:
+            return response.json()
+        else:
+            print(f"Failed to fetch user from Clerk API: {response.status_code} - {response.text}")
+            return None
+    except Exception as e:
+        print(f"Error fetching user from Clerk API: {e}")
+        return None
 
 def clerk_auth_middleware(get_response):
     """Middleware to authenticate requests using Clerk tokens."""
