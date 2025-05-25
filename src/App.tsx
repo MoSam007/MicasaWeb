@@ -28,7 +28,7 @@ import MovingJobs from './pages/Movers/MovingJobs';
 import MoverAnalytics from './pages/Movers/MoverAnalytics';
 
 import './App.css';
-import MoverSidebar from './navigation/MoverSidebar';
+import OwnerSidebar from './navigation/OwnerSidebar';
 
 function App() {
   return (
@@ -116,6 +116,7 @@ function App() {
               path="/my-listings" 
               element={
                 <ProtectedRoute allowedRoles={['owner', 'admin']}>
+                  <OwnerSidebar isDarkMode={false} toggleDarkMode={() => {}} />
                   <OwnerDashboard />
                 </ProtectedRoute>
               } 
@@ -124,6 +125,7 @@ function App() {
               path="/add-listing" 
               element={
                 <ProtectedRoute allowedRoles={['owner', 'admin']}>
+                  <OwnerSidebar isDarkMode={false} toggleDarkMode={() => {}} />
                   <AddListing />
                 </ProtectedRoute>
               } 
@@ -132,7 +134,30 @@ function App() {
               path="/admin/listings" 
               element={
                 <ProtectedRoute allowedRoles={['owner', 'admin']}>
+                  <OwnerSidebar isDarkMode={false} toggleDarkMode={() => {}} />
                   <ManageListings />
+                </ProtectedRoute>
+              } 
+            />
+
+            // You might also want to add routes for owner-analytics and owner-settings:
+            <Route 
+              path="/owner-analytics" 
+              element={
+                <ProtectedRoute allowedRoles={['owner', 'admin']}>
+                  <OwnerSidebar isDarkMode={false} toggleDarkMode={() => {}} />
+                  {/* Create OwnerAnalytics component */}
+                  <div>Owner Analytics Coming Soon</div>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/owner-settings" 
+              element={
+                <ProtectedRoute allowedRoles={['owner', 'admin']}>
+                  <OwnerSidebar isDarkMode={false} toggleDarkMode={() => {}} />
+                  {/* Create OwnerSettings component */}
+                  <div>Owner Settings Coming Soon</div>
                 </ProtectedRoute>
               } 
             />
