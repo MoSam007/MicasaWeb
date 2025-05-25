@@ -3,11 +3,14 @@ import { useAuth } from '../auth/ClerkauthContext';
 import DefaultNavigation from './DefaultNavigation';
 import HunterNavigation from './HunterNavigation';
 import OwnerNavigation from './OwnerNavigation';
-import MoverNavigation from './MoverNavigation';
 import AdminNavigation from './AdminNavigation'; 
+import MoverSidebar from './MoverSidebar';
 
 const NavigationRouter: React.FC = () => {
   const { isSignedIn, userRole, isLoaded } = useAuth();
+  const [isDarkMode, setIsDarkMode] = React.useState(false);
+  
+  const toggleDarkMode = () => setIsDarkMode(prev => !prev);
   
   console.log("NavigationRouter - User signed in:", isSignedIn, "userRole:", userRole);
 
@@ -30,9 +33,9 @@ const NavigationRouter: React.FC = () => {
     case 'hunter':
       return <HunterNavigation />;
     case 'owner':
-      return <OwnerNavigation />;
+      return <OwnerNavigation isDarkMode={isDarkMode} toggleDarkMode={toggleDarkMode} />;
     case 'mover':
-      return <MoverNavigation />;
+      return <MoverSidebar isDarkMode={isDarkMode} toggleDarkMode={toggleDarkMode} />;
     case 'admin':
       return <AdminNavigation />; 
     default:

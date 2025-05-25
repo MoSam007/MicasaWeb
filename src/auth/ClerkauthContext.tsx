@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth as useClerkAuth, useUser } from '@clerk/clerk-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 type UserRole = 'hunter' | 'owner' | 'mover' | 'admin';
 
@@ -29,8 +29,57 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [userRole, setRole] = useState<UserRole | null>(null);
   const [username, setUsername] = useState<string | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [hasRedirected, setHasRedirected] = useState(false);
   const { getToken, signOut } = useClerkAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Get role-specific default routes
+  const getRoleDefaultRoute = (role: UserRole): string => {
+    switch (role) {
+      case 'hunter':
+        return '/listings';
+      case 'owner':
+        return '/my-listings';
+      case 'mover':
+        return '/moving-services';
+      case 'admin':
+        return '/admin/dashboard';
+      default:
+        return '/';
+    }
+  };
+
+  // Check if current path is appropriate for user role
+  const isOnAppropriateRoute = (role: UserRole, currentPath: string): boolean => {
+    const publicRoutes = ['/', '/about', '/login', '/register', '/register/verify-email-address'];
+    
+    // Allow public routes
+    if (publicRoutes.includes(currentPath)) {
+      return false; // Should redirect to role-specific route
+    }
+
+    // Check role-specific routes
+    switch (role) {
+      case 'hunter':
+        return currentPath.startsWith('/listings') || 
+               currentPath.startsWith('/listing/') || 
+               currentPath.startsWith('/wishlist');
+      case 'owner':
+        return currentPath.startsWith('/my-listings') || 
+               currentPath.startsWith('/add-listing') || 
+               currentPath.startsWith('/admin/listings');
+      case 'mover':
+        return currentPath.startsWith('/moving-services') || 
+               currentPath.startsWith('/jobs') || 
+               currentPath.startsWith('/mover-') ||
+               currentPath.startsWith('/mover-dashboard');
+      case 'admin':
+        return currentPath.startsWith('/admin/');
+      default:
+        return false;
+    }
+  };
 
   // Fetch user role from Django backend using Clerk token
   const fetchUserRole = async () => {
@@ -38,6 +87,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setRole(null);
       setUsername(null);
       setIsLoaded(true);
+      setHasRedirected(false);
       return;
     }
 
@@ -67,6 +117,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.log("Fetched user role from backend:", backendRole);
         setRole(backendRole);
         setUsername(backendUsername);
+        
+        // Check if we need to redirect to appropriate route
+        if (!hasRedirected && !isOnAppropriateRoute(backendRole, location.pathname)) {
+          console.log("Redirecting user to appropriate route based on role:", backendRole);
+          navigate(getRoleDefaultRoute(backendRole), { replace: true });
+          setHasRedirected(true);
+        }
       } else if (response.status === 404 || response.status === 401) {
         // User doesn't exist in backend yet
         console.log("User not found in backend");
@@ -81,6 +138,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           // Create user in backend with role from metadata
           await createUserInBackend(token, metadataRole);
           setRole(metadataRole);
+          
+          // Redirect to appropriate route
+          if (!hasRedirected && !isOnAppropriateRoute(metadataRole, location.pathname)) {
+            console.log("Redirecting user to appropriate route based on metadata role:", metadataRole);
+            navigate(getRoleDefaultRoute(metadataRole), { replace: true });
+            setHasRedirected(true);
+          }
         } else {
           // Default to hunter if no role is found anywhere
           console.log("No role found, defaulting to hunter");
@@ -100,14 +164,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           } catch (error) {
             console.error("Error updating Clerk metadata:", error);
           }
+          
+          // Redirect to hunter default route
+          if (!hasRedirected && !isOnAppropriateRoute('hunter', location.pathname)) {
+            console.log("Redirecting new user to hunter route");
+            navigate('/listings', { replace: true });
+            setHasRedirected(true);
+          }
         }
       } else {
         console.error('Error fetching user info:', response.status);
         setRole('hunter'); // Default fallback
+        
+        // Redirect to default route
+        if (!hasRedirected && location.pathname === '/') {
+          navigate('/listings', { replace: true });
+          setHasRedirected(true);
+        }
       }
     } catch (error) {
       console.error('Error in fetchUserRole:', error);
       setRole('hunter'); // Default to hunter on error
+      
+      // Redirect to default route on error
+      if (!hasRedirected && location.pathname === '/') {
+        navigate('/listings', { replace: true });
+        setHasRedirected(true);
+      }
     } finally {
       setIsLoaded(true);
     }
@@ -184,22 +267,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Redirect user based on role
   const redirectBasedOnRole = (role: UserRole) => {
-    switch (role) {
-      case 'hunter':
-        navigate('/listings');
-        break;
-      case 'owner':
-        navigate('/my-listings');
-        break;
-      case 'mover':
-        navigate('/moving-services');
-        break;
-      case 'admin':
-        navigate('/admin/dashboard');
-        break;
-      default:
-        navigate('/');
-    }
+    const targetRoute = getRoleDefaultRoute(role);
+    console.log(`Redirecting user with role ${role} to ${targetRoute}`);
+    navigate(targetRoute, { replace: true });
   };
 
   // Function to manually refresh user data
@@ -215,7 +285,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       await signOut();
       setRole(null);
       setUsername(null);
-      navigate('/');
+      setHasRedirected(false);
+      navigate('/', { replace: true });
     } catch (error) {
       console.error('Error during logout:', error);
       throw error;
@@ -239,6 +310,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       fetchUserRole();
     }
   }, [clerkLoaded, isSignedIn, userId]);
+
+  // Reset redirect flag when location changes
+  useEffect(() => {
+    setHasRedirected(false);
+  }, [location.pathname]);
 
   const value = {
     isLoaded,

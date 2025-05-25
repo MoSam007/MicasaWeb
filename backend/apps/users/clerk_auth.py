@@ -16,12 +16,15 @@ def verify_clerk_token(token):
     """Verify the Clerk JWT token and extract user info."""
     try:
         # Using the verification key for JWT validation
+        # The key issue is here - Clerk tokens need specific audience and issuer settings
+        # The "aud" claim should be set to match what Clerk sends
         payload = jwt.decode(
             token,
             CLERK_JWT_VERIFICATION_KEY,
             algorithms=["RS256"],
             options={"verify_signature": True},
-            audience="clerk",
+            # Use a more flexible audience check - Clerk often uses the frontend URL as audience
+            audience=[CLERK_ISSUER, "clerk", "https://blessed-meerkat-26.clerk.accounts.dev"],
             issuer=CLERK_ISSUER
         )
         return payload

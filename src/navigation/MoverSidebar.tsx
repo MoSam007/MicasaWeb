@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
   FaTruck, 
-  FaHome, 
   FaClipboardList, 
   FaCog, 
   FaBars, 
@@ -10,9 +9,10 @@ import {
   FaChartLine,
   FaMoon,
   FaSun,
-  FaUserCircle
+  FaUserCircle,
+  FaSignOutAlt
 } from 'react-icons/fa';
-import { UserDropdown } from './UserDropdown';
+import { useAuth } from '../auth/ClerkauthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface MoverSidebarProps {
@@ -24,6 +24,7 @@ const MoverSidebar: React.FC<MoverSidebarProps> = ({ isDarkMode, toggleDarkMode 
   const [isOpen, setIsOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
   const location = useLocation();
+  const { userEmail, username, logout } = useAuth();
 
   // Auto-collapse sidebar on mobile when navigating
   useEffect(() => {
@@ -48,11 +49,20 @@ const MoverSidebar: React.FC<MoverSidebarProps> = ({ isDarkMode, toggleDarkMode 
 
   const toggleSidebar = () => setIsOpen(!isOpen);
 
+  // Handle logout
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  };
+
   // Navigation links data
   const navLinks = [
     { to: "/moving-services", icon: <FaTruck />, text: "My Services" },
-    { to: "/mover-dashboard", icon: <FaHome />, text: "Available Homes" },
     { to: "/jobs", icon: <FaClipboardList />, text: "Moving Jobs" },
+    { to: "/mover-analytics", icon: <FaChartLine />, text: "Analytics" },
     { to: "/mover-settings", icon: <FaCog />, text: "Settings" },
   ];
 
@@ -171,7 +181,7 @@ const MoverSidebar: React.FC<MoverSidebarProps> = ({ isDarkMode, toggleDarkMode 
                   <FaUserCircle size={32} className="text-green-700" />
                 </motion.div>
                 <div>
-                  <h3 className="font-medium">John Doe</h3>
+                  <h3 className="font-medium">{username || userEmail?.split('@')[0] || 'Mover'}</h3>
                   <p className="text-sm opacity-75">Professional Mover</p>
                 </div>
               </div>
@@ -207,10 +217,11 @@ const MoverSidebar: React.FC<MoverSidebarProps> = ({ isDarkMode, toggleDarkMode 
 
             {/* Bottom Controls */}
             <motion.div 
-              className={`px-4 py-3 border-t ${isDarkMode ? 'border-gray-700' : 'border-green-400'}`}
+              className={`px-4 py-3 border-t ${isDarkMode ? 'border-gray-700' : 'border-green-400'} space-y-3`}
               variants={navItemVariants}
             >
-              <div className="flex items-center justify-between">
+              {/* Dark Mode Toggle */}
+              <div className="flex items-center justify-center">
                 <motion.button
                   onClick={toggleDarkMode}
                   whileHover={{ scale: 1.1, rotate: 15 }}
@@ -223,8 +234,22 @@ const MoverSidebar: React.FC<MoverSidebarProps> = ({ isDarkMode, toggleDarkMode 
                 >
                   {isDarkMode ? <FaSun size={18} /> : <FaMoon size={18} />}
                 </motion.button>
-                <UserDropdown theme={isDarkMode ? "dark" : "light"} />
               </div>
+
+              {/* Logout Button */}
+              <motion.button
+                onClick={handleLogout}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className={`w-full flex items-center justify-center space-x-2 px-4 py-3 rounded-lg transition-all ${
+                  isDarkMode 
+                    ? 'bg-red-700 hover:bg-red-600 text-white' 
+                    : 'bg-red-500 hover:bg-red-600 text-white'
+                } font-medium`}
+              >
+                <FaSignOutAlt size={16} />
+                <span>Log Out</span>
+              </motion.button>
             </motion.div>
           </motion.aside>
         )}

@@ -7,6 +7,7 @@ import DefaultNavigation from '../navigation/DefaultNavigation';
 
 const Navigation: React.FC = () => {
   const { currentUser, loading } = useAuth();
+  const [isDarkMode, setIsDarkMode] = React.useState(false);
 
   if (loading) {
     return (
@@ -21,7 +22,7 @@ const Navigation: React.FC = () => {
     case 'hunter':
       return <HunterNavigation />;
     case 'owner':
-      return <OwnerNavigation />;
+      return <OwnerNavigation isDarkMode={isDarkMode} toggleDarkMode={() => setIsDarkMode(!isDarkMode)} />;
     case 'mover':
       return <MoverNavigation />;
     default:
