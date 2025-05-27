@@ -79,7 +79,7 @@ function App() {
             <Route 
               path="/listing/:l_id" 
               element={
-                <ProtectedRoute allowedRoles={['hunter', 'owner', 'mover', 'admin']} requireAuth={true}>
+                <ProtectedRoute allowedRoles={['hunter', 'owner', 'mover', 'admin']} requireAuth={false}>
                   <ListingDetails />
                 </ProtectedRoute>
               } 
@@ -97,7 +97,7 @@ function App() {
             <Route 
               path="/listing/:l_id/gallery"
               element={
-                <ProtectedRoute requireAuth={true}>
+                <ProtectedRoute requireAuth={false}>
                   <Gallery />
                 </ProtectedRoute>
               } 

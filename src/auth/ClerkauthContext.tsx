@@ -309,7 +309,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (clerkLoaded) {
       fetchUserRole();
     }
-  }, [clerkLoaded, isSignedIn, userId]);
+  }, [clerkLoaded, isSignedIn, userId, fetchUserRole]);
 
   // Reset redirect flag when location changes
   useEffect(() => {
