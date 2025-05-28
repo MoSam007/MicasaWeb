@@ -1,9 +1,12 @@
 from django.http import JsonResponse
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from django.shortcuts import get_object_or_404
 from .models import Listing
 from .serializers import ListingSerializer
 from apps.users.clerk_auth import clerk_auth_required, require_role
+
+from listings import models
 
 @api_view(['GET'])
 @clerk_auth_required
@@ -11,33 +14,18 @@ from apps.users.clerk_auth import clerk_auth_required, require_role
 def get_owner_listings(request):
     """Get listings that belong to the current owner"""
     try:
-        # Get the owner ID from the JWT token
-        clerk_payload = getattr(request, 'clerk_payload', {})
+        # Get the current user (owner)
+        current_user = request.user
         
-        # Try different ways to get the owner ID
-        owner_id = None
-        
-        # First, check if current user is the owner
-        if request.user.role == 'owner':
-            owner_id = request.user.uid
-        
-        # Also check JWT claims for owner ID
-        hasura_claims = clerk_payload.get('https://hasura.io/jwt/claims', {})
-        jwt_owner_id = hasura_claims.get('x-hasura-owner-id')
-        
-        if jwt_owner_id:
-            owner_id = jwt_owner_id
-        
-        if not owner_id:
-            return Response({"error": "Owner ID not found"}, status=400)
-        
-        # Filter listings by owner
-        # Assuming your Listing model has an 'owner_id' field
-        # If not, you'll need to add this field to your model
-        listings = Listing.objects.filter(owner_id=owner_id)
+        # Filter listings by owner using the ForeignKey relationship
+        listings = Listing.objects.filter(owner=current_user).order_by('-created_at')
         
         serializer = ListingSerializer(listings, many=True)
-        return Response(serializer.data)
+        return Response({
+            'listings': serializer.data,
+            'count': listings.count(),
+            'owner': current_user.username
+        })
         
     except Exception as e:
         return Response({"error": str(e)}, status=500)
@@ -48,29 +36,28 @@ def get_owner_listings(request):
 def create_owner_listing(request):
     """Create a new listing for the current owner"""
     try:
-        # Get the owner ID
-        owner_id = None
-        if request.user.role == 'owner':
-            owner_id = request.user.uid
+        # Get the current user (owner)
+        current_user = request.user
         
-        clerk_payload = getattr(request, 'clerk_payload', {})
-        hasura_claims = clerk_payload.get('https://hasura.io/jwt/claims', {})
-        jwt_owner_id = hasura_claims.get('x-hasura-owner-id')
-        
-        if jwt_owner_id:
-            owner_id = jwt_owner_id
-        
-        if not owner_id:
-            return Response({"error": "Owner ID not found"}, status=400)
-        
-        # Add owner_id to the request data
+        # Create a mutable copy of request data
         data = request.data.copy()
-        data['owner_id'] = owner_id
         
+        # Remove owner from data if present (we'll set it programmatically)
+        if 'owner' in data:
+            del data['owner']
+        if 'owner_id' in data:
+            del data['owner_id']
+        
+        # Create serializer with the data
         serializer = ListingSerializer(data=data)
+        
         if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=201)
+            # Save with the current user as owner
+            listing = serializer.save(owner=current_user)
+            
+            # Return the created listing
+            response_serializer = ListingSerializer(listing)
+            return Response(response_serializer.data, status=201)
         else:
             return Response(serializer.errors, status=400)
             
@@ -83,34 +70,30 @@ def create_owner_listing(request):
 def update_owner_listing(request, listing_id):
     """Update a listing owned by the current owner"""
     try:
-        # Get the owner ID
-        owner_id = None
-        if request.user.role == 'owner':
-            owner_id = request.user.uid
+        current_user = request.user
         
-        clerk_payload = getattr(request, 'clerk_payload', {})
-        hasura_claims = clerk_payload.get('https://hasura.io/jwt/claims', {})
-        jwt_owner_id = hasura_claims.get('x-hasura-owner-id')
+        # Get the listing and verify ownership using ForeignKey
+        listing = get_object_or_404(Listing, l_id=listing_id, owner=current_user)
         
-        if jwt_owner_id:
-            owner_id = jwt_owner_id
+        # Create a mutable copy of request data
+        data = request.data.copy()
         
-        if not owner_id:
-            return Response({"error": "Owner ID not found"}, status=400)
+        # Remove owner from data if present (prevent owner changes)
+        if 'owner' in data:
+            del data['owner']
+        if 'owner_id' in data:
+            del data['owner_id']
         
-        # Get the listing and verify ownership
-        try:
-            listing = Listing.objects.get(l_id=listing_id, owner_id=owner_id)
-        except Listing.DoesNotExist:
-            return Response({"error": "Listing not found or access denied"}, status=404)
+        serializer = ListingSerializer(listing, data=data, partial=True)
         
-        serializer = ListingSerializer(listing, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
         else:
             return Response(serializer.errors, status=400)
             
+    except Listing.DoesNotExist:
+        return Response({"error": "Listing not found or access denied"}, status=404)
     except Exception as e:
         return Response({"error": str(e)}, status=500)
 
@@ -120,28 +103,41 @@ def update_owner_listing(request, listing_id):
 def delete_owner_listing(request, listing_id):
     """Delete a listing owned by the current owner"""
     try:
-        # Get the owner ID
-        owner_id = None
-        if request.user.role == 'owner':
-            owner_id = request.user.uid
+        current_user = request.user
         
-        clerk_payload = getattr(request, 'clerk_payload', {})
-        hasura_claims = clerk_payload.get('https://hasura.io/jwt/claims', {})
-        jwt_owner_id = hasura_claims.get('x-hasura-owner-id')
+        # Get the listing and verify ownership using ForeignKey
+        listing = get_object_or_404(Listing, l_id=listing_id, owner=current_user)
         
-        if jwt_owner_id:
-            owner_id = jwt_owner_id
+        listing.delete()
+        return Response({"message": "Listing deleted successfully"}, status=204)
         
-        if not owner_id:
-            return Response({"error": "Owner ID not found"}, status=400)
+    except Listing.DoesNotExist:
+        return Response({"error": "Listing not found or access denied"}, status=404)
+    except Exception as e:
+        return Response({"error": str(e)}, status=500)
+
+@api_view(['GET'])
+@clerk_auth_required
+@require_role(['owner', 'admin'])
+def get_owner_listing_stats(request):
+    """Get statistics for owner's listings"""
+    try:
+        current_user = request.user
+        listings = Listing.objects.filter(owner=current_user)
         
-        # Get the listing and verify ownership
-        try:
-            listing = Listing.objects.get(l_id=listing_id, owner_id=owner_id)
-            listing.delete()
-            return Response({"message": "Listing deleted successfully"}, status=204)
-        except Listing.DoesNotExist:
-            return Response({"error": "Listing not found or access denied"}, status=404)
-            
+        stats = {
+            'total_listings': listings.count(),
+            'active_listings': listings.filter(status='active').count(),
+            'inactive_listings': listings.filter(status='inactive').count(),
+            'pending_listings': listings.filter(status='pending').count(),
+            'archived_listings': listings.filter(status='archived').count(),
+            'total_likes': sum(listing.likes for listing in listings),
+            'average_rating': listings.aggregate(
+                avg_rating=models.Avg('rating')
+            )['avg_rating'] or 0,
+        }
+        
+        return Response(stats)
+        
     except Exception as e:
         return Response({"error": str(e)}, status=500)
