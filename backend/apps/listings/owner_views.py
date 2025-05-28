@@ -2,11 +2,11 @@ from django.http import JsonResponse
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
+from django.db import models
 from .models import Listing
 from .serializers import ListingSerializer
 from apps.users.clerk_auth import clerk_auth_required, require_role
 
-from listings import models
 
 @api_view(['GET'])
 @clerk_auth_required

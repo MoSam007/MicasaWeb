@@ -11,6 +11,7 @@ urlpatterns = [
     path('api/profiles/', include('apps.profiles.urls')),
     path('api/reviews/', include('apps.reviews.urls')),
     path('api/wishlist/', include('apps.wishlist.urls')),
+    path('api/owner/listings/', include('apps.listings.owner_urls')), 
 ]
 
 # Serve media files during development
