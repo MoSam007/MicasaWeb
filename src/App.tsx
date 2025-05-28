@@ -13,7 +13,7 @@ import EmailVerification from './pages/Public/VerifyEmail';
 import Listings from './pages/Listings';
 import ListingDetails from './pages/ListingDetail';
 import Wishlist from './pages/Hunters/Wishlist';
-import OwnerDashboard from './pages/Owners/AdminListingManager';
+import OwnerDashboard from './pages/Owners/OwnerListingManager';
 import AddListing from './pages/Owners/AddListingForm';
 import ManageListings from './pages/Owners/AdminListingDetail';
 import MoverDashboard from './navigation/MoverSidebar';
@@ -36,7 +36,7 @@ function App() {
     <AuthProvider>
       <div className="App">
         <NavigationRouter />
-        <main className="min-h-screen bg-gray-50">
+        <main className="min-h-screen bg-gray-300">
           <Routes>
             {/* Public routes */}
             <Route path="/" element={<Home />} />
