@@ -10,7 +10,30 @@ User = get_user_model()
 
 CLERK_API_KEY = os.environ.get('CLERK_API_KEY')
 CLERK_JWT_VERIFICATION_KEY = os.environ.get('CLERK_JWT_VERIFICATION_KEY')
-CLERK_ISSUER = os.environ.get('CLERK_ISSUER')  # Should be something like https://blessed-meerkat-26.clerk.accounts.dev
+CLERK_ISSUER = os.environ.get('CLERK_ISSUER')
+
+def update_clerk_user_metadata(user_id, metadata):
+    """Update user metadata in Clerk"""
+    headers = {
+        "Authorization": f"Bearer {CLERK_API_KEY}",
+        "Content-Type": "application/json"
+    }
+    
+    try:
+        response = requests.patch(
+            f"https://api.clerk.dev/v1/users/{user_id}",
+            headers=headers,
+            json={"public_metadata": metadata}
+        )
+        
+        if response.status_code == 200:
+            return response.json()
+        else:
+            print(f"Failed to update user metadata: {response.status_code} - {response.text}")
+            return None
+    except Exception as e:
+        print(f"Error updating user metadata: {e}")
+        return None
 
 def verify_clerk_token(token):
     """Verify the Clerk JWT token and extract user info."""
@@ -34,12 +57,10 @@ def verify_clerk_token(token):
             CLERK_JWT_VERIFICATION_KEY,
             algorithms=["RS256"],
             options={"verify_signature": True, "verify_aud": True},
-            # Use the audience from the token itself, or common Clerk audiences
             audience=token_audience if token_audience else [
                 CLERK_ISSUER,
                 f"{CLERK_ISSUER}",
                 "clerk",
-                # Add your specific Clerk instance URL here
                 "https://blessed-meerkat-26.clerk.accounts.dev"
             ],
             issuer=token_issuer if token_issuer else CLERK_ISSUER
@@ -110,13 +131,20 @@ def clerk_auth_middleware(get_response):
                         user = User.objects.get(uid=clerk_user_id)
                         # Set user in request
                         request.user = user
+                        
+                        # Also store token payload for role-specific access
+                        request.clerk_payload = payload
+                        
                     except User.DoesNotExist:
                         # Get user info from Clerk API
                         clerk_user = get_user_from_clerk(clerk_user_id)
                         
                         if clerk_user:
-                            # Extract role from metadata
-                            role = clerk_user.get('public_metadata', {}).get('role', 'hunter')
+                            # Extract role from JWT metadata first, then from public_metadata
+                            role = payload.get('metadata', {}).get('role', 'user')
+                            if not role or role == 'user':
+                                role = clerk_user.get('public_metadata', {}).get('role', 'user')
+                            
                             email = clerk_user.get('email_addresses', [{}])[0].get('email_address', '')
                             username = email.split('@')[0] if email else clerk_user_id[:8]
                             
@@ -128,7 +156,24 @@ def clerk_auth_middleware(get_response):
                                 role=role,
                                 is_active=True
                             )
+                            
+                            # Update Clerk metadata with role-specific ID
+                            role_metadata = clerk_user.get('public_metadata', {})
+                            role_metadata['role'] = role
+                            
+                            # Set role-specific ID based on user's role
+                            if role == 'owner':
+                                role_metadata['owner_id'] = clerk_user_id
+                            elif role == 'hunter':
+                                role_metadata['hunter_id'] = clerk_user_id
+                            elif role == 'mover':
+                                role_metadata['mover_id'] = clerk_user_id
+                            
+                            # Update Clerk with the new metadata
+                            update_clerk_user_metadata(clerk_user_id, role_metadata)
+                            
                             request.user = user
+                            request.clerk_payload = payload
         
         return get_response(request)
     
@@ -144,3 +189,18 @@ def clerk_auth_required(view_func):
         return view_func(request, *args, **kwargs)
     
     return wrapped_view
+
+def require_role(allowed_roles):
+    """Decorator to require specific roles for views."""
+    def decorator(view_func):
+        @wraps(view_func)
+        def wrapped_view(request, *args, **kwargs):
+            if not request.user or not hasattr(request.user, 'uid'):
+                return JsonResponse({"error": "Authentication required"}, status=401)
+            
+            if request.user.role not in allowed_roles:
+                return JsonResponse({"error": "Insufficient permissions"}, status=403)
+            
+            return view_func(request, *args, **kwargs)
+        return wrapped_view
+    return decorator
