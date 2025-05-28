@@ -6,7 +6,7 @@ interface IListing {
   location: string;
   price: string;
   rating: number;
-  imageUrls: string[];
+  image_urls: string[];
   description: string;
   amenities: string[];
 }
@@ -45,7 +45,7 @@ const AdminListingDetail: React.FC = () => {
     if (listing) {
       setListing({
         ...listing,
-        imageUrls: listing.imageUrls.filter((img) => !selectedImages.includes(img)),
+        image_urls: listing.image_urls.filter((img) => !selectedImages.includes(img)),
       });
       setSelectedImages([]);
       setNotification("Selected images removed successfully");
@@ -82,7 +82,7 @@ const AdminListingDetail: React.FC = () => {
     // Append new images to FormData
     newImages.forEach((image) => formData.append("newImages", image));
     // Append remaining image URLs
-    listing.imageUrls.forEach((url) => formData.append("imageUrls", url));
+    listing.image_urls.forEach((url) => formData.append("imageUrls", url));
 
     try {
       const response = await fetch(`${backendUrl}/api/listings/${l_id}`, {
@@ -124,7 +124,7 @@ const AdminListingDetail: React.FC = () => {
 
       {/* Gallery for existing images */}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mb-4">
-        {listing.imageUrls.map((url) => (
+        {listing.image_urls.map((url) => (
           <div key={url} className="relative">
             <img
               src={`${backendUrl}/uploads/${url}`}

@@ -8,7 +8,7 @@ interface IListing {
   location: string;
   price: string;
   rating: number;
-  imageUrls: string[];
+  image_urls: string[];
   description: string;
   amenities: string[];
 }
@@ -49,9 +49,9 @@ const AdminListingManager: React.FC = () => {
   };
 
   const getImageUrl = (listing: IListing) => {
-    if (listing.imageUrls && listing.imageUrls.length > 0) {
+    if (listing.image_urls && listing.image_urls.length > 0) {
       // Check if the image URL is already a full URL or just a filename
-      const imageUrl = listing.imageUrls[0];
+      const imageUrl = listing.image_urls[0];
       if (imageUrl.startsWith('http')) {
         return imageUrl;
       }
@@ -59,7 +59,7 @@ const AdminListingManager: React.FC = () => {
       return `${backendUrl}/uploads/${imageUrl}`;
     }
     // Fallback placeholder image
-    return `${backendUrl}/static/placeholder.jpg`;
+    return `${backendUrl}/uploads/placeholder.jpg`;
   };
 
   const renderStars = (rating: number) => {
@@ -84,7 +84,7 @@ const AdminListingManager: React.FC = () => {
     const target = e.target as HTMLImageElement;
     // Try a different fallback approach
     if (!target.src.includes('placeholder')) {
-      target.src = `${backendUrl}/static/placeholder.jpg`;
+      target.src = `${backendUrl}/uploads/placeholder.jpg`;
     } else {
       // If even the placeholder fails, use a data URL for a simple gray rectangle
       target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg==';
