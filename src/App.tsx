@@ -29,6 +29,7 @@ import MoverAnalytics from './pages/Movers/MoverAnalytics';
 
 import './App.css';
 import OwnerSidebar from './navigation/OwnerSidebar';
+import OwnerAnalytics from './pages/Owners/OwnerAnalytics';
 
 function App() {
   return (
@@ -79,7 +80,7 @@ function App() {
             <Route 
               path="/listing/:l_id" 
               element={
-                <ProtectedRoute allowedRoles={['hunter', 'owner', 'mover', 'admin']} requireAuth={false}>
+                <ProtectedRoute allowedRoles={['hunter', 'owner', 'mover', 'admin']} >
                   <ListingDetails />
                 </ProtectedRoute>
               } 
@@ -97,7 +98,7 @@ function App() {
             <Route 
               path="/listing/:l_id/gallery"
               element={
-                <ProtectedRoute requireAuth={false}>
+                <ProtectedRoute allowedRoles={['hunter', 'owner', 'mover', 'admin']}>
                   <Gallery />
                 </ProtectedRoute>
               } 
@@ -139,15 +140,12 @@ function App() {
                 </ProtectedRoute>
               } 
             />
-
-            // You might also want to add routes for owner-analytics and owner-settings:
             <Route 
               path="/owner-analytics" 
               element={
                 <ProtectedRoute allowedRoles={['owner', 'admin']}>
                   <OwnerSidebar isDarkMode={false} toggleDarkMode={() => {}} />
-                  {/* Create OwnerAnalytics component */}
-                  <div>Owner Analytics Coming Soon</div>
+                  < OwnerAnalytics />
                 </ProtectedRoute>
               } 
             />

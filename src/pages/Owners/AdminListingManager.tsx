@@ -20,7 +20,8 @@ const AdminListingManager: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  const backendUrl = "http://127.0.0.1:8000";
+  // Use consistent backend URL
+  const backendUrl = API_BASE_URL || "http://127.0.0.1:8000";
 
   useEffect(() => {
     fetchListings();
@@ -29,7 +30,7 @@ const AdminListingManager: React.FC = () => {
   const fetchListings = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_BASE_URL}/listings/`);
+      const response = await fetch(`${backendUrl}/listings/`);
       if (!response.ok) {
         throw new Error('Failed to fetch listings');
       }
@@ -43,14 +44,22 @@ const AdminListingManager: React.FC = () => {
   };
 
   const handleListingClick = (l_id: number) => {
+    // Navigate to the admin listing detail page
     navigate(`/admin/listings/${l_id}`);
   };
 
   const getImageUrl = (listing: IListing) => {
     if (listing.imageUrls && listing.imageUrls.length > 0) {
-      return `${backendUrl}/uploads/${listing.imageUrls[0]}`;
+      // Check if the image URL is already a full URL or just a filename
+      const imageUrl = listing.imageUrls[0];
+      if (imageUrl.startsWith('http')) {
+        return imageUrl;
+      }
+      // Construct the full URL to the uploads folder
+      return `${backendUrl}/uploads/${imageUrl}`;
     }
-    return '/api/placeholder/300/200'; // Fallback placeholder image
+    // Fallback placeholder image
+    return `${backendUrl}/static/placeholder.jpg`;
   };
 
   const renderStars = (rating: number) => {
@@ -69,6 +78,17 @@ const AdminListingManager: React.FC = () => {
         <span className="text-sm text-gray-600 ml-1">({rating})</span>
       </div>
     );
+  };
+
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+    const target = e.target as HTMLImageElement;
+    // Try a different fallback approach
+    if (!target.src.includes('placeholder')) {
+      target.src = `${backendUrl}/static/placeholder.jpg`;
+    } else {
+      // If even the placeholder fails, use a data URL for a simple gray rectangle
+      target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg==';
+    }
   };
 
   if (loading) {
@@ -195,10 +215,7 @@ const AdminListingManager: React.FC = () => {
                         src={getImageUrl(listing)}
                         alt={listing.title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.src = '/api/placeholder/300/200';
-                        }}
+                        onError={handleImageError}
                       />
                       <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-lg text-sm font-semibold text-green-700">
                         {listing.price}
@@ -231,10 +248,7 @@ const AdminListingManager: React.FC = () => {
                         src={getImageUrl(listing)}
                         alt={listing.title}
                         className="w-full h-full object-cover"
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.src = '/api/placeholder/80/80';
-                        }}
+                        onError={handleImageError}
                       />
                     </div>
                     <div className="flex-grow">

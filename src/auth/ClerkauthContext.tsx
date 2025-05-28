@@ -2,6 +2,8 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth as useClerkAuth, useUser } from '@clerk/clerk-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
+const API_URL = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000';
+
 type UserRole = 'hunter' | 'owner' | 'mover' | 'admin';
 
 interface AuthContextType {
@@ -67,7 +69,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                currentPath.startsWith('/wishlist');
       case 'owner':
         return currentPath.startsWith('/my-listings') || 
-               currentPath.startsWith('/add-listing') || 
+               currentPath.startsWith('/add-listing') ||
+               currentPath.startsWith('/owner-analytics') || 
                currentPath.startsWith('/admin/listings');
       case 'mover':
         return currentPath.startsWith('/moving-services') || 
@@ -75,7 +78,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                currentPath.startsWith('/mover-') ||
                currentPath.startsWith('/mover-dashboard');
       case 'admin':
-        return currentPath.startsWith('/admin/');
+        return currentPath.startsWith('/admin/')||
+                currentPath.startsWith('/admin/dashboard');
       default:
         return false;
     }
@@ -93,7 +97,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     try {
       // Get session token
-      const token = await getToken();
+      const token = await getToken({
+        template: "micasa",
+      });
       
       if (!token) {
         console.error("No token available");
@@ -102,7 +108,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       
       // Try to get user info from backend
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000'}/api/users/clerk/info/`, {
+      const response = await fetch(`${API_URL}/api/users/clerk/info/`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'X-Auth-Provider': 'clerk' // Explicitly tell the backend to use Clerk auth
@@ -136,7 +142,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           console.log("Found role in Clerk metadata:", metadataRole);
           
           // Create user in backend with role from metadata
-          await createUserInBackend(token, metadataRole);
+          await createUserInBackend(metadataRole);
           setRole(metadataRole);
           
           // Redirect to appropriate route
@@ -160,7 +166,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             });
             
             // Also create user in backend
-            await createUserInBackend(token, 'hunter');
+            await createUserInBackend('hunter');
           } catch (error) {
             console.error("Error updating Clerk metadata:", error);
           }
@@ -197,9 +203,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   // Create user in backend with role
-  const createUserInBackend = async (token: string, role: UserRole) => {
+  const createUserInBackend = async (role: UserRole) => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000'}/api/users/clerk/create/`, {
+      // Get fresh token with audience
+      const token = await getToken({
+        template: "micasa",
+      });
+
+      if (!token) {
+        throw new Error('No token available');
+      }
+
+      const response = await fetch(`${API_URL}/api/users/clerk/create/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -227,10 +242,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     try {
       // Get token for backend authentication
-      const token = await getToken();
+      const token = await getToken({
+        template: 'micasa',
+      });
       
       // Update role in backend
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000'}/api/users/clerk/role/`, {
+      const response = await fetch(`${API_URL}/api/users/clerk/role/`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
