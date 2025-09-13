@@ -1,19 +1,21 @@
-import csv
-import io
-import json
-import requests
-from django.http import HttpResponse, JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
-from django.conf import settings
-from .models import UserProfile
-from .firebase_auth import firebase_auth_required
-from firebase_admin import auth as firebase_auth
+# import csv
+# import io
+# import json
+# import requests
+# from django.http import HttpResponse, JsonResponse
+# from django.views.decorators.csrf import csrf_exempt
+# from rest_framework.decorators import api_view
+# from rest_framework.response import Response
+# from django.conf import settings
+# from .models import UserProfile
+# from .firebase_auth import firebase_auth_required
+# from firebase_admin import auth as firebase_auth
 
-@api_view(['POST'])
-@firebase_auth_required  # Only allow admin users with Firebase auth during migration
-def export_users_for_clerk(request):
+# All migration logic is now disabled. This file is kept for reference only.
+
+# @api_view(['POST'])
+# @firebase_auth_required  # Only allow admin users with Firebase auth during migration
+# def export_users_for_clerk(request):
     """
     Export users from the database to a CSV format that can be imported into Clerk.
     This endpoint is admin-only and is used during the migration process.
@@ -64,9 +66,9 @@ def export_users_for_clerk(request):
     
     return response
 
-@api_view(['POST'])
-@firebase_auth_required  # Admin only during migration
-def migrate_user_to_clerk(request):
+# @api_view(['POST'])
+# @firebase_auth_required  # Admin only during migration
+# def migrate_user_to_clerk(request):
     """
     Migrate a single user from Firebase to Clerk.
     This endpoint creates the user in Clerk and updates the UID in the database.
@@ -110,9 +112,9 @@ def migrate_user_to_clerk(request):
     except Exception as e:
         return Response({"error": str(e)}, status=500)
 
-@api_view(['POST'])
-@firebase_auth_required  # Admin only during migration
-def update_user_clerk_uid(request):
+# @api_view(['POST'])
+# @firebase_auth_required  # Admin only during migration
+# def update_user_clerk_uid(request):
     """
     Update a user's UID in the database after they've been migrated to Clerk.
     This is used to link existing database records to new Clerk users.

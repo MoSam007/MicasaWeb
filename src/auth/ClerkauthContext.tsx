@@ -13,10 +13,15 @@ interface AuthContextType {
   userEmail: string | null;
   username: string | null;
   userRole: UserRole | null;
+  currentUser: {
+    email: string | null;
+    role: UserRole | null;
+  } | null;
   setUserRole: (role: UserRole) => Promise<void>;
   logout: () => Promise<void>;
   checkUserPermission: (requiredRoles: UserRole[]) => boolean;
   refreshUserData: () => Promise<void>;
+   getToken: (options?: { template?: string }) => Promise<string | null>;
 }
 
 const AuthContext = createContext<AuthContextType>({} as AuthContextType);
@@ -340,10 +345,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     userEmail: user?.primaryEmailAddress?.emailAddress || null,
     username,
     userRole,
+    currentUser: isSignedIn ? {
+    email: user?.primaryEmailAddress?.emailAddress || null,
+    role: userRole
+  } : null,
     setUserRole,
     logout,
     checkUserPermission,
-    refreshUserData
+    refreshUserData,
+    getToken
   };
 
   return (

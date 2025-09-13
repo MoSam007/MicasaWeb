@@ -1,9 +1,9 @@
-from firebase_admin import auth as firebase_auth
+# from firebase_admin import auth as firebase_auth
+# from .firebase_auth import firebase_auth_required
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
-from .firebase_auth import firebase_auth_required
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from .models import UserProfile
@@ -17,7 +17,7 @@ def get_user_profile(request, uid):
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
-@firebase_auth_required
+# Remove all usages of firebase_auth and firebase_auth_required in this file
 def get_user_info(request):
     """Get current user info including role"""
     serializer = UserSerializer(request.user)

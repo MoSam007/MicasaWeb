@@ -109,15 +109,11 @@ CORS_ALLOW_HEADERS = [
 
 APPEND_SLASH = False
 
-# Database Configuration for MySQL
+# Database Configuration for SQLite (default Django DB)
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.environ.get('DB_NAME', 'micasa_db'),
-        'USER': os.environ.get('DB_USER', 'micasa_user'),
-        'PASSWORD': os.environ.get('DB_PASSWORD', ''),
-        'HOST': os.environ.get('DB_HOST', 'localhost'),
-        'PORT': os.environ.get('DB_PORT', '3306'),
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
 

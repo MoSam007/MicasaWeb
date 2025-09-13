@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../auth/authContext';
+import { useAuth } from '../../auth/ClerkauthContext';
 import { FaHeart, FaTrash } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 
@@ -12,7 +12,7 @@ interface WishlistItem {
 }
 
 const Wishlist: React.FC = () => {
-  const { currentUser } = useAuth();
+  const { getToken } = useAuth();
   const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -22,9 +22,10 @@ const Wishlist: React.FC = () => {
 
   const fetchWishlistItems = async () => {
     try {
+      const token = await getToken({ template: 'micasa' });
       const response = await fetch('http://127.0.0.1:8000/api/wishlist', {
         headers: {
-          'Authorization': `Bearer ${await currentUser?.getIdToken()}`
+          'Authorization': `Bearer ${token}`
         }
       });
       const data = await response.json();
@@ -38,10 +39,11 @@ const Wishlist: React.FC = () => {
 
   const removeFromWishlist = async (listingId: number) => {
     try {
+      const token = await getToken({ template: 'micasa' });
       await fetch(`http://127.0.0.1:8000/api/wishlist/${listingId}`, {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${await currentUser?.getIdToken()}`
+          'Authorization': `Bearer ${token}`
         }
       });
       setWishlistItems(prev => prev.filter(item => item.l_id !== listingId));

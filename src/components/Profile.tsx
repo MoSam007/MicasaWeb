@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../auth/authContext';
+import { useAuth } from '../auth/ClerkauthContext';
 import { FaUser, FaEnvelope, FaHome, FaHeart, FaTruck, FaCog, FaBell, FaHistory } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 
@@ -10,7 +10,7 @@ interface UserStats {
 }
 
 const Profile: React.FC = () => {
-  const { currentUser } = useAuth();
+  const { isSignedIn, userId, getToken } = useAuth();
   const [activeTab, setActiveTab] = useState<'overview' | 'settings' | 'activity'>('overview');
   const [stats, setStats] = useState<UserStats>({
     wishlistCount: 0,
@@ -22,9 +22,10 @@ const Profile: React.FC = () => {
     // Fetch user stats
     const fetchStats = async () => {
       try {
+        const token = await getToken({ template: 'micasa' });
         const response = await fetch(`http://127.0.0.1:8000/api/users/stats`, {
           headers: {
-            'Authorization': `Bearer ${await currentUser?.getIdToken()}`
+            'Authorization': `Bearer ${token}`
           }
         });
         const data = await response.json();
@@ -34,10 +35,10 @@ const Profile: React.FC = () => {
       }
     };
 
-    if (currentUser) {
+    if (isSignedIn && userId) {
       fetchStats();
     }
-  }, [currentUser]);
+  }, [isSignedIn, userId, getToken]);
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -117,11 +118,11 @@ const Profile: React.FC = () => {
               </div>
               <div className="md:ml-6 mt-4 md:mt-0 text-center md:text-left">
                 <h1 className="text-2xl font-bold text-gray-900">
-                  {currentUser?.email?.split('@')[0]}
+                  {userId?.split('@')[0] || 'User'}
                 </h1>
-                <p className="text-gray-600">{currentUser?.email}</p>
+                <p className="text-gray-600">{userId}</p>
                 <p className="text-sm text-gray-500 capitalize mt-1">
-                  {currentUser?.role} Account
+                  Account
                 </p>
               </div>
             </div>

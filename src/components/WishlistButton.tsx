@@ -2,7 +2,7 @@
 import React from 'react';
 import { FaHeart } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useAuth } from '../auth/authContext';
+import { useAuth } from '../auth/ClerkauthContext';
 
 interface WishlistButtonProps {
   listingId: number | string;
@@ -17,7 +17,7 @@ const WishlistButton: React.FC<WishlistButtonProps> = ({
   likesCount,
   onToggle
 }) => {
-  const { currentUser } = useAuth();
+  const { isSignedIn } = useAuth();
 
   return (
     <div className="relative">
@@ -35,7 +35,7 @@ const WishlistButton: React.FC<WishlistButtonProps> = ({
       </motion.button>
       
       <AnimatePresence>
-        {!currentUser && (
+        {!isSignedIn && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}

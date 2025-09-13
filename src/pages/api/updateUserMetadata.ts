@@ -1,7 +1,7 @@
-import { Clerk } from '@clerk/clerk-sdk-node';
+import { createClerkClient } from '@clerk/clerk-sdk-node';
 
 // Initialize Clerk with your secret key
-const clerk = Clerk({ secretKey: process.env.CLERK_SECRET_KEY });
+const clerk = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
 
 export default async function handler(req: { method: string; body: { userId: any; metadata: any; }; }, res: { status: (arg0: number) => { (): any; new(): any; json: { (arg0: { error?: string; success?: boolean; }): any; new(): any; }; }; }) {
   if (req.method !== 'POST') {

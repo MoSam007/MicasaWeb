@@ -1,13 +1,14 @@
-import { User } from "firebase/auth";
 import { Request } from 'express';
-import { DecodedIdToken } from 'firebase-admin/auth';
+import { User } from '@clerk/clerk-sdk-node';
 
 export interface AuthenticatedRequest extends Request {
-    user?: DecodedIdToken;
+    user?: User;
 }
 
 export type UserRole = 'hunter' | 'owner' | 'mover' | 'admin';
 
-export interface UserWithRole extends User {
+export interface UserWithRole {
+  id: string;
+  email?: string;
   role?: UserRole;
 }

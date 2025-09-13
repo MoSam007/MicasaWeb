@@ -11,7 +11,7 @@ import {
   FaWifi, FaBriefcase, FaTv, FaUtensils, FaCoffee, FaSnowflake, FaHotTub,
   FaFan, FaPlug, FaBath, FaChevronRight, FaSprayCan, FaSoap, FaHandHoldingWater
 } from 'react-icons/fa';
-import { useAuth } from '../auth/authContext';
+import { useAuth } from '../auth/ClerkauthContext';
 import API_BASE_URL from '../../src/config';
 
 // Skeleton Loader
@@ -144,7 +144,7 @@ interface WishlistState {
 const ListingDetail: React.FC = () => {
   const { l_id } = useParams<{ l_id: string }>();
   const navigate = useNavigate();
-  const { currentUser } = useAuth();
+  const { isSignedIn, getToken, userId } = useAuth();
   const [listing, setListing] = useState<IListing | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -214,10 +214,10 @@ const ListingDetail: React.FC = () => {
   useEffect(() => {
     const checkWishlistStatus = async () => {
       // Check if user is logged in and l_id is valid
-      if (!currentUser || !l_id || l_id === 'undefined') return;
+      if (!isSignedIn || !l_id || l_id === 'undefined') return;
   
       try {
-        const token = await currentUser.getIdToken();
+        const token = await getToken({ template: 'micasa' });
         const response = await fetch(`${API_BASE_URL}/wishlist/check/${l_id}/`, {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -238,10 +238,10 @@ const ListingDetail: React.FC = () => {
     };
   
     checkWishlistStatus();
-  }, [l_id, currentUser]);
+  }, [l_id, isSignedIn, getToken]);
   
   const handleLike = async () => {
-    if (!currentUser) {
+    if (!isSignedIn) {
       navigate("/login");
       return;
     }
@@ -253,7 +253,7 @@ const ListingDetail: React.FC = () => {
     }
   
     try {
-      const token = await currentUser.getIdToken();
+      const token = await getToken({ template: 'micasa' });
       const response = await fetch(`${API_BASE_URL}/wishlist/${l_id}/`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },

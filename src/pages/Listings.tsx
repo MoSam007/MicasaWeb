@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { FaHeart, FaAngleLeft, FaAngleRight } from 'react-icons/fa';
 import API_BASE_URL from '../../src/config';
 import LoadingSkeleton from '../components/LoadingSkeleton';
-import { useAuth } from '../auth/authContext';
+import { useAuth } from '../auth/ClerkauthContext';
 interface Listing {
   l_id: string | number;
   title: string;
@@ -20,14 +20,14 @@ const backendUrl = "http://127.0.0.1:8000";
 
 const Listings: React.FC = () => {
   const navigate = useNavigate();
-  const { currentUser } = useAuth();
+  const { isSignedIn, userId } = useAuth();
   const [listings, setListings] = useState<Listing[]>([]);
   const [watchlist, setWatchlist] = useState<number[]>([]);
   const [imageIndexes, setImageIndexes] = useState<Record<string | number, number>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const loggedIn = !!currentUser;
+  const loggedIn = !!isSignedIn;
 
   useEffect(() => {
     const fetchListings = async () => {
@@ -63,11 +63,12 @@ const Listings: React.FC = () => {
 
   useEffect(() => {
     const fetchWatchlist = async () => {
-      if (!loggedIn || !currentUser) return;
+      if (!loggedIn || !userId) return;
       try {
-        const idToken = await currentUser.getIdToken();
+        const { getToken } = useAuth();
+        const token = await getToken({ template: 'micasa' });
         const response = await fetch(`${backendUrl}/api/wishlist/`, {
-          headers: { Authorization: `Bearer ${idToken}` },
+          headers: { Authorization: `Bearer ${token}` },
         });
         if (response.ok) {
           const data = await response.json();
@@ -78,7 +79,7 @@ const Listings: React.FC = () => {
       }
     };
     fetchWatchlist();
-  }, [loggedIn, currentUser]);
+  }, [loggedIn, userId]);
 
   const handleNextImage = (id: number | string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -108,17 +109,18 @@ const Listings: React.FC = () => {
 
   const handleLike = async (id: string | number, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!loggedIn || !currentUser) {
+    if (!loggedIn) {
       alert('Please log in to like a listing.');
       navigate('/login');
       return;
     }
 
     try {
-      const idToken = await currentUser.getIdToken();
+      const { getToken } = useAuth();
+      const token = await getToken({ template: 'micasa' });
       const response = await fetch(`${backendUrl}/api/listings/${id}/like`, {
         method: 'POST',
-        headers: { Authorization: `Bearer ${idToken}` },
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       if (response.ok) {
